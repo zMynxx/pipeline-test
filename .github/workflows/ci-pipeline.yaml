@@ -5,9 +5,9 @@ on:
     branches: ['main', 'feature/*']
 
 env:
-  AWS_REGION:     ${{ env.AWS_REGION }}    # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REGISTRY:   ${{ secrets.ECR_REGISTRY }} # set this to your Amazon ECR repository name
-  ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+  AWS_REGION:     AWS_REGION    # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REGISTRY:   ECR_REGISTRY  # set this to your Amazon ECR repository name
+  ECR_REPOSITORY: REPO_NAME
 
 jobs:
   build:
