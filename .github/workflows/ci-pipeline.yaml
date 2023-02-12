@@ -39,7 +39,8 @@ jobs:
         with:
           context: ./GitHub-Actions/demodocker
           push: true
-          tags: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ github.sha }}
+          tags: 442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:0.1 
+          #${{ env.ECR_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.sha }}
         #   ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         #   ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
         #   IMAGE_TAG: ${{ github.sha }}
