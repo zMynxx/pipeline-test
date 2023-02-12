@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: Testing
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: whoami ?
         run: echo $(whoami) && pwd
 
