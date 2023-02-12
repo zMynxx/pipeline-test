@@ -35,11 +35,11 @@ jobs:
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
+        working-directory: ./GitHub-Actions/demodocker
         with:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
           IMAGE_TAG: ${{ github.sha }}
-        working-directory: ./GitHub-Actions/demodocker
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
