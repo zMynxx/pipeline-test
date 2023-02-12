@@ -5,9 +5,9 @@ on:
     branches: ['main', 'feature/*']
 
 env:
-  AWS_REGION:     AWS_REGION    # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REGISTRY:   ECR_REGISTRY  # set this to your Amazon ECR repository name
-  ECR_REPOSITORY: REPO_NAME    
+  AWS_REGION:     ${{ env.AWS_REGION }}    # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REGISTRY:   ${{ secrets.ECR_REGISTRY }} # set this to your Amazon ECR repository name
+  ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
 
 jobs:
   build:
@@ -20,8 +20,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
-          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1 #${{ env.AWS_REGION }}
           role-duration-seconds: 1200
 
