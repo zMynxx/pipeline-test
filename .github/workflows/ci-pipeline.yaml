@@ -1,3 +1,14 @@
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [12-02-2023] #
+# 
+# Stages: Package, Test, Deliver, Deploy.
+# 
+# Notes:
+# 1. Use quality actions only.
+# 2. Prefer using actions to code.
+# 3. Use secrets and vars where possible for dynamically and security.
+# 4. TBD - decouple jobs furtur more, after figuring out how to pass files from one job to the other.
+# 5. TBD - figure out how to use secret for the ECR and repo name for the build-push-docker action.
+# 6. 
 name: ci-pipeline
 
 on:
@@ -26,6 +37,15 @@ jobs:
           docker run --name dockertest -d  pipeline:current-build-test
           echo "Assume we have unit tests to run..."
           docker stop dockertest
+
+      # Move files between jobs
+      - run: mkdir -p path/to/artifact
+      - run: echo hello > path/to/artifact/world.txt
+      - name: Save
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: path/to/artifact/world.txt
   
   configure:
     runs-on: ubuntu-latest
@@ -50,7 +70,16 @@ jobs:
       # Git Clone
       - name: Checkout
         uses: actions/checkout@v3
-        
+      
+      # Move files between jobs
+      - name: Download
+        uses: actions/download-artifact@v3
+        with:
+          name: my-artifact
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: path/to/artifact
+
       # Delivery
       - name: Build, tag, and push image to Amazon ECR
         uses: docker/build-push-action@v2
