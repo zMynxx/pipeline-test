@@ -4,10 +4,10 @@ on:
   push:
     branches: ['main', 'feature/*']
 
-env:
-  AWS_REGION:     AWS_REGION    # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REGISTRY:   ECR_REGISTRY  # set this to your Amazon ECR repository name
-  ECR_REPOSITORY: REPO_NAME
+# env:
+#   AWS_REGION:     AWS_REGION    # set this to your preferred AWS region, e.g. us-west-1
+#   ECR_REGISTRY:   ECR_REGISTRY  # set this to your Amazon ECR repository name
+#   ECR_REPOSITORY: REPO_NAME
 
 jobs:
   build:
@@ -36,7 +36,8 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
-          ECR_REGISTRY: ${{ secrets.REPO_NAME }}
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
           IMAGE_TAG: ${{ github.sha }}
         working-directory: ./GitHub-Actions/demodocker
         run: |
