@@ -17,7 +17,7 @@ jobs:
       - name: Package
         working-directory: ./GitHub-Actions/demodocker
         run:  |
-          docker build -t pipeline:current-build-test
+          docker build -t pipeline:current-build-test .
     
       # Unit Test Current Build
       - name: Test
