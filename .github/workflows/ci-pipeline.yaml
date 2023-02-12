@@ -40,6 +40,9 @@ jobs:
           context: ./GitHub-Actions/demodocker
           push: true
           tags: $ECR_REGISTRY/$ECR_REPOSITORY:0.11 
+        env:
+          ECR_REGISTRY:   ${{ secrets.ECR_REGISTRY }}  # set this to your Amazon ECR repository name
+          ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
           #442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:0.1 
           #${{ env.ECR_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.sha }}
         #   ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
