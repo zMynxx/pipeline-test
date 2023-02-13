@@ -86,6 +86,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: Testing
     steps:
+      # Git Clone
+      - name: Checkout
+        uses: actions/checkout@v3
+        
       # Grab the latest tag, form vX.X.X
       - name: Semver
         id: SemVer
