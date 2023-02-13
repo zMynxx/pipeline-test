@@ -140,7 +140,7 @@ jobs:
         id: pass_publish_tag
         run: |
           next=`echo "(${{ steps.minor.outputs.patch }}+1)" | bc`
-          echo "publish_tag=v${{ steps.minor.outputs.major }}.${{ steps.minor.outputs.minor }}.$next" >> $GITHUB_OUTPUT
+          echo "publish_tag=${{ steps.minor.outputs.major }}.${{ steps.minor.outputs.minor }}.$next" >> $GITHUB_OUTPUT
 
   Publish:
     needs: [Build, Test1, Test2, Test3, SemVer]
@@ -186,7 +186,7 @@ jobs:
       
       - name: Pass tag to next job
         id: toTag
-        run: echo "toTag=${{ needs.SemVer.outputs.current_build_tag }}" >> $GITHUB_OUTPUT
+        run: echo "toTag=v${{ needs.SemVer.outputs.current_build_tag }}" >> $GITHUB_OUTPUT
 
   GitTag:
     needs: [Build, Test1, Test2, Test3, SemVer, Publish]
