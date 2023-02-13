@@ -152,6 +152,12 @@ jobs:
 
       - name: Test tag passed from prev job and soon-to-be-published
         run: echo "${{ needs.SemVer.outputs.current_build_tag }}"
+      
+      - name: Git clone
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -162,12 +168,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-      
-      - name: Git clone
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
       
       - name: Login to Amazon ECR
         id: login-ecr
@@ -182,7 +182,7 @@ jobs:
           tags: |
             ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ needs.SemVer.outputs.current_build_tag }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-to: type=gha,mode=max
       
       - name: Pass tag to next job
         id: toTag
