@@ -84,9 +84,11 @@ jobs:
       # SemVer preperation, grabbing latest tag, adding minor to it.
       - name: Semver
         id: SemVer
-        # if: ${{ github.Action == pull_request }}
+        # if: ${{ github.Action == pull_request }} #$(git rev-list --tags --max-count=1)
         run: |
-          TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+          git describe --tags
+          git describe --tags $(git rev-list --tags --max-count=1))
+          TAG=$(git describe --tags)
           echo $TAG
         
       # SemVer preperation, grabbing latest tag, adding minor to it.
