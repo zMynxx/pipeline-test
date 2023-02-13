@@ -72,7 +72,7 @@ jobs:
       - name: UnitTest#1
         working-directory: ./GitHub-Actions/demodocker
         run: |
-          docker build -t pipeline:current-build-test2 -f Dockerfile .
+          docker build -t pipeline:current-build-test2 -f Dockerfile
           docker run --name dockertest -d pipeline:current-build-test2
           echo "Assume we have unit tests to run..."
           docker stop dockertest
@@ -291,7 +291,7 @@ jobs:
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_CHANNEL: general
-        SLACK_COLOR: bad # or a specific color like 'good' or '#ff00ff'
+        SLACK_COLOR: 'bad' # or a specific color like 'good' or '#ff00ff'
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         SLACK_MESSAGE: |
           :robot_face: GitHub build result: ${{ needs.GitTag.result }}  :robot_face:
