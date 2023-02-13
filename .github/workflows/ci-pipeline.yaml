@@ -236,6 +236,7 @@ jobs:
     name: Slack Notification
     needs: [Build, Test1, Test2, Test3, SemVer, Publish, GitTag]
     runs-on: ubuntu-latest
+    if: always()
     steps:
 
     - name: Git clone
@@ -245,14 +246,49 @@ jobs:
       run: |
         echo "${{ needs.GitTag.result }}"
 
+    # Success
     - name: Slack Notification
+      if: ${{ needs.GitTag.result == 'success' }}
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_CHANNEL: general
-        SLACK_COLOR: ${{ needs.GitTag.result }} # or a specific color like 'good' or '#ff00ff'
+        SLACK_COLOR: 'good' # or a specific color like 'good' or '#ff00ff'
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-        SLACK_MESSAGE: "GitHub build result: ${{ needs.GitTag.result }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }} :robot_face:"
+        SLACK_MESSAGE: |
+          :robot_face: GitHub build result: ${{ needs.GitTag.result }}  :robot_face:
+          ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
         SLACK_TITLE: "GitHub Workflow Report:"
         SLACK_USERNAME: GitHubBot
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    if: always()
+
+    # Failed
+    - name: Slack Notification
+      if: ${{ needs.GitTag.result == 'skipped' }}
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_CHANNEL: general
+        SLACK_COLOR: bad # or a specific color like 'good' or '#ff00ff'
+        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        SLACK_MESSAGE: |
+          :robot_face: GitHub build result: ${{ needs.GitTag.result }}  :robot_face:
+          ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
+          :warning: Pipeline has SKIPPED some of it's jobs, probabely due to early failure :warning:
+        SLACK_TITLE: "GitHub Workflow Report:"
+        SLACK_USERNAME: GitHubBot
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+    # Failed
+    - name: Slack Notification
+      if: ${{ needs.GitTag.result == 'failure' }}
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_CHANNEL: general
+        SLACK_COLOR: bad # or a specific color like 'good' or '#ff00ff'
+        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        SLACK_MESSAGE: |
+          :robot_face: GitHub build result: ${{ needs.GitTag.result }}  :robot_face:
+          ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
+          :x::sos: Pipeline has FAILED, please check you code! :sos::x:
+        SLACK_TITLE: "GitHub Workflow Report:"
+        SLACK_USERNAME: GitHubBot
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
