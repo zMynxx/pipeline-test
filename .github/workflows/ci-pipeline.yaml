@@ -98,13 +98,16 @@ jobs:
         # if: ${{ github.Action == pull_request }} #$(git rev-list --tags --max-count=1)
         run: |
           git fetch --tags --all
-          echo "::set-output name=version::$(git describe --tags $(git rev-list --tags --max-count=1))"
+          version=`git describe --tags $(git rev-list --tags --max-count=1) | cut -d 'v' -f2`
+          echo "current_version=$version" >> $GITHUB_OUTPUT
         
       # Take care of minor update
       - name: minor
         id: minor
         run: |
-          minor=${{ steps.SemVer.outputs.version }}
+          major=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 1`
+          minor=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 2`
+          patch=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 3`
           echo "minor=$minor" >> $GITHUB_OUTPUT
 
       # Pass current publish tag to the next job
@@ -112,13 +115,16 @@ jobs:
         id: pass_publish_tag
         env:
           TAG: ${{ steps.minor.outputs.minor }}
-        run: echo "publish_tag=${{ env.TAG }}" >> $GITHUB_OUTPUT
+        run: |
+          next=$(${{ env.TAG }})
+          echo "publish_tag=${{ env.TAG }}" >> $GITHUB_OUTPUT
 
   Publish:
     needs: Semantic_Versioning
     runs-on: ubuntu-latest
     environment: Testing
     steps:
+
       # Grab passed tag from prev job
       - name: Current Publish Tag
         env:
