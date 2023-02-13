@@ -16,7 +16,7 @@ on:
     branches: ['main', 'feature/*']
 
 jobs:
-  build:
+  Build:
     runs-on: ubuntu-latest
     environment: Testing
     steps:
@@ -47,8 +47,8 @@ jobs:
           name: my-artifact
           path: path/to/artifact/world.txt
   
-  configure:
-    needs: build
+  Publish:
+    needs: Build
     runs-on: ubuntu-latest
     environment: Testing
     steps:
@@ -98,7 +98,7 @@ jobs:
         run: |
           echo $TAG
 
-      # Delivery
+      # Publish
       - name: Build, tag, and push image to Amazon ECR
         uses: docker/build-push-action@v2
         id: build-image
