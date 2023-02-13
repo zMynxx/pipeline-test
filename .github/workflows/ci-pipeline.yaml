@@ -180,7 +180,7 @@ jobs:
           context: ./GitHub-Actions/demodocker
           push: true
           tags: |
-            ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ needs.SemVer.outputs.current_build_tag }}
+            ${{ secrets.REPO_NAME }}:${{ needs.SemVer.outputs.current_build_tag }}
           cache-from: type=gha
           # cache-to: type=gha,mode=max
       
