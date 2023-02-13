@@ -102,6 +102,8 @@ jobs:
     needs: SemVer
     runs-on: ubuntu-latest
     environment: Testing
+    outputs:
+      current_build_tag: ${{ steps.toTag.outputs.toTag }}
     steps:
 
       # Grab passed tag from prev job
@@ -136,7 +138,12 @@ jobs:
           context: ./GitHub-Actions/demodocker
           push: true
           tags: 442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:0.1 
-  
+      
+      # Pass tag to next job - GitTag
+      - name: Pass soon-to-be-tagged tag
+        id: toTag
+        run: echo "toTag=${{ needs.SemVer.outputs.current_build_tag }}" >> $GITHUB_OUTPUT
+
   GitTag:
     needs: Publish
     runs-on: ubuntu-latest
@@ -150,13 +157,13 @@ jobs:
       - name: Tag
         id: tag
         run: |
-          git tag -a "${{ needs.SemVer.outputs.current_build_tag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.SemVer.outputs.current_build_tag }}"
+          git tag -a "${{ needs.Publish.outputs.toTag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.Publish.outputs.toTag }}"
 
       # Push commit and tag
       - name: Push-tag
         id: push-tag
         run: |
-          git push origin ${{ needs.SemVer.outputs.current_build_tag }}
+          git push origin ${{ needs.Publish.outputs.toTag }}
           echo "Git tag create successfully!"
 
   # Report on Slack
