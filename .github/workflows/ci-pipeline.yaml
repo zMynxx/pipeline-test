@@ -157,7 +157,7 @@ jobs:
       - name: Push local tag to remote
         id: push-tag
         run: |
-          git push -u origin ${{ needs.Publish.outputs.toTag }}
+          git push origin ${{ needs.Publish.outputs.toTag }}
           echo "Git tag create successfully!"
 
   # Report on Slack
