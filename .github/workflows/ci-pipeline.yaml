@@ -191,5 +191,5 @@ jobs:
     steps:
     
     - name: printenv
-      runs: printenv
+      run: printenv
     if: always()
