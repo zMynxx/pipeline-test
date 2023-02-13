@@ -99,14 +99,14 @@ jobs:
           echo "publish_tag=v${{ steps.minor.outputs.major }}.${{ steps.minor.outputs.minor }}.$next" >> $GITHUB_OUTPUT
 
   Publish:
-    needs: Semantic_Versioning
+    needs: SemVer
     runs-on: ubuntu-latest
     environment: Testing
     steps:
 
       # Grab passed tag from prev job
       - name: Test soon-to-be-published tag
-        run: echo "${{ needs.Semantic_Versioning.outputs.current_build_tag }}"
+        run: echo "${{ needs.SemVer.outputs.current_build_tag }}"
 
       # Set up AWS Auth
       - name: Configure AWS credentials
@@ -138,7 +138,7 @@ jobs:
           tags: 442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:0.1 
   
   GitTag:
-    needs: Publish
+    needs: Publish,SemVer
     runs-on: ubuntu-latest
     environment: Testing
     steps:
@@ -150,13 +150,13 @@ jobs:
       - name: Tag
         id: tag
         run: |
-          git tag -a "${{ needs.Semantic_Versioning.outputs.current_build_tag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.Semantic_Versioning.outputs.current_build_tag }}"
+          git tag -a "${{ needs.SemVer.outputs.current_build_tag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.SemVer.outputs.current_build_tag }}"
 
       # Push commit and tag
       - name: Push-tag
         id: push-tag
         run: |
-          git push origin ${{ needs.Semantic_Versioning.outputs.current_build_tag }}
+          git push origin ${{ needs.SemVer.outputs.current_build_tag }}
           echo "Git tag create successfully!"
 
   # Report on Slack
@@ -167,12 +167,12 @@ jobs:
     - uses: actions/checkout@v3
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: general
-          SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
-          SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png?size=48
-          SLACK_MESSAGE: 'Post Content :rocket:'
-          SLACK_TITLE: Post Title
-          SLACK_USERNAME: GitHubBot
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      env:
+        SLACK_CHANNEL: general
+        SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
+        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png?size=48
+        SLACK_MESSAGE: 'Post Content :rocket:'
+        SLACK_TITLE: Post Title
+        SLACK_USERNAME: GitHubBot
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     if: always()
