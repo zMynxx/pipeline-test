@@ -159,6 +159,8 @@ jobs:
 
       - name: Push local tag to remote
         id: push-tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git push origin ${{ needs.Publish.outputs.toTag }}
           echo "Git tag create successfully!"
@@ -189,7 +191,6 @@ jobs:
     name: printenv
     runs-on: ubuntu-latest
     steps:
-    
     - name: printenv
       run: printenv
     if: always()
