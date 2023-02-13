@@ -91,7 +91,7 @@ jobs:
       # SemVer preperation, grabbing latest tag, adding minor to it.
       - name: Semver
         env:
-          TAG: ${{ step.SemVer.output }}
+          TAG: ${{ steps.SemVer.output }}
         run: |
           echo $TAG
 
