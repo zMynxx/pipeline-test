@@ -233,6 +233,10 @@ jobs:
     - name: Git clone
       uses: actions/checkout@v3
     
+    - name: Test status
+      run: |
+        echo "${{ needs.GitTag.outcome }}"
+  
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
       env:
