@@ -162,11 +162,13 @@ jobs:
         run: |
           git tag -a "${{ needs.Publish.outputs.toTag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.Publish.outputs.toTag }}"
 
-      - name: Push local tag to remote
-        id: push-tag 
-        uses: webfactory/ssh-agent@v0.5.4 #(Give GitHub Actions access to Michael-F-Bryan/my-secret-repo)
+      - name: Give GitHub Actions access to zMynx/pipeline-test repo
+        uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SECRET_REPO_DEPLOY_KEY }}
+          
+      - name: Push local tag to remote
+        id: push-tag 
         run: |
           git push origin ${{ needs.Publish.outputs.toTag }}
           echo "Git tag create successfully!"
