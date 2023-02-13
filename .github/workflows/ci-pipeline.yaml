@@ -42,11 +42,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
+      ## Manual Package and UnitTest using docker ##
       # Build the image
       # - name: Package
       #   working-directory: ./GitHub-Actions/demodocker
       #   run:  |
       #     docker build -t pipeline:current-build-test .
+      # Unit Test Current Build
+      # - name: Test
+      #   working-directory: ./GitHub-Actions/demodocker
+      #   run: |
+      #     docker run --name dockertest -d  pipeline:current-build-test
+      #     echo "Assume we have unit tests to run..."
+      #     docker stop dockertest
 
       # Build the image
       - name: Package
@@ -61,7 +69,7 @@ jobs:
       - name: Test
         working-directory: ./GitHub-Actions/demodocker
         run: |
-          docker run --name dockertest -d  pipeline:current-build-test
+          docker run --name dockertest -d pipeline:current-build-test2
           echo "Assume we have unit tests to run..."
           docker stop dockertest
 
