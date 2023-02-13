@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: Testing
     outputs:
-      current_build_tag: ${{ steps.toTag.outputs.toTag }}
+      toTag: ${{ steps.toTag.outputs.toTag }}
     steps:
 
       # Grab passed tag from prev job
@@ -149,6 +149,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: Testing
     steps:
+
+      # Grab passed tag from prev job
+      - name: Test soon-to-be-tagged tag
+        run: echo "${{ needs.Publish.outputs.toTag }}"
+
       # Git Clone
       - name: Checkout
         uses: actions/checkout@v3
