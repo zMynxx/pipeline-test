@@ -26,6 +26,8 @@ name: ci-pipeline
 on:
   push:
     branches: ['main', 'feature/*']
+  pull_request:
+    branches: ['main']
 
 # permission can be added at job level or workflow level    
 permissions:
@@ -40,20 +42,6 @@ jobs:
       # Git Clone
       - name: Checkout
         uses: actions/checkout@v3
-      
-      ## Manual Package and UnitTest using docker ##
-      # Build the image
-      # - name: Package
-      #   working-directory: ./GitHub-Actions/demodocker
-      #   run:  |
-      #     docker build -t pipeline:current-build-test .
-      # Unit Test Current Build
-      # - name: Test
-      #   working-directory: ./GitHub-Actions/demodocker
-      #   run: |
-      #     docker run --name dockertest -d  pipeline:current-build-test
-      #     echo "Assume we have unit tests to run..."
-      #     docker stop dockertest
 
       # Build the image
       - name: Package
@@ -71,17 +59,8 @@ jobs:
           docker run --name dockertest -d pipeline:current-build-test2
           echo "Assume we have unit tests to run..."
           docker stop dockertest
-
-      # Move files between jobs
-      - run: mkdir -p path/to/artifact
-      - run: echo hello > path/to/artifact/world.txt
-      - name: Save
-        uses: actions/upload-artifact@v3
-        with:
-          name: my-artifact
-          path: path/to/artifact/world.txt
   
-  Semantic_Versioning:
+  SemVer:
     # if: ${{ github.Action == pull_request }} #$(git rev-list --tags --max-count=1)
     needs: Build
     runs-on: ubuntu-latest
@@ -102,7 +81,7 @@ jobs:
           echo "current_version=$version" >> $GITHUB_OUTPUT
         
       # Split current version 
-      - name: minor
+      - name: Split tag
         id: minor
         run: |
           major=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 1`
@@ -112,8 +91,8 @@ jobs:
           echo "minor=$minor" >> $GITHUB_OUTPUT
           echo "patch=$patch" >> $GITHUB_OUTPUT
 
-      # Pass current publish tag to the next job
-      - name: minor
+      # Update patch and pass current publish tag to the next job
+      - name: Build next tag
         id: pass_publish_tag
         run: |
           next=`echo "(${{ steps.minor.outputs.patch }}+1)" | bc`
@@ -126,7 +105,7 @@ jobs:
     steps:
 
       # Grab passed tag from prev job
-      - name: Current Publish Tag
+      - name: Test soon-to-be-published tag
         run: echo "${{ needs.Semantic_Versioning.outputs.current_build_tag }}"
 
       # Set up AWS Auth
@@ -148,15 +127,6 @@ jobs:
       # Git Clone
       - name: Checkout
         uses: actions/checkout@v3
-      
-      # Move files between jobs - TBD
-      # - name: Download
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: my-artifact
-      # - name: Display structure of downloaded files
-      #   run: ls -R
-      #   working-directory: path/to/artifact
 
       # Publish
       - name: Build, tag, and push image to Amazon ECR
@@ -166,3 +136,43 @@ jobs:
           context: ./GitHub-Actions/demodocker
           push: true
           tags: 442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:0.1 
+  
+  GitTag:
+    needs: Publish
+    runs-on: ubuntu-latest
+    environment: Testing
+    steps:
+      # Git Clone
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Commit empty and tag local
+      - name: Tag
+        id: tag
+        run: |
+          git tag -a "${{ needs.Semantic_Versioning.outputs.current_build_tag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.Semantic_Versioning.outputs.current_build_tag }}"
+
+      # Push commit and tag
+      - name: Push-tag
+        id: push-tag
+        run: |
+          git push origin ${{ needs.Semantic_Versioning.outputs.current_build_tag }}
+          echo "Git tag create successfully!"
+
+  # Report on Slack
+  slackNotification:
+    name: Slack Notification
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: general
+          SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
+          SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png?size=48
+          SLACK_MESSAGE: 'Post Content :rocket:'
+          SLACK_TITLE: Post Title
+          SLACK_USERNAME: GitHubBot
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    if: always()
