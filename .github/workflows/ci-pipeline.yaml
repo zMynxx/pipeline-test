@@ -18,6 +18,7 @@
 # 5) (aws-actions/amazon-ecr-login@v1)[https://github.com/marketplace/actions/amazon-ecr-login-action-for-github-actions]
 # 6) (actions/download-artifact@v3)[https://github.com/marketplace/actions/download-a-build-artifact]
 # 7) ()[]
+# 7) ()[]
 #
 # GitHub OpenID Connect - https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
 #
@@ -49,7 +50,9 @@ jobs:
         with:
           context: ./GitHub-Actions/demodocker
           push: false
-          tags: pipeline:current-build-test2 
+          tags: pipeline:current-build-test2
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Unit Test Current Build
         working-directory: ./GitHub-Actions/demodocker
@@ -126,7 +129,9 @@ jobs:
         with:
           context: ./GitHub-Actions/demodocker
           push: true
-          tags: 442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:0.1 
+          tags: 442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:0.1
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       
       - name: Pass tag to next job
         id: toTag
@@ -158,9 +163,10 @@ jobs:
           git tag -a "${{ needs.Publish.outputs.toTag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.Publish.outputs.toTag }}"
 
       - name: Push local tag to remote
-        id: push-tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: push-tag 
+        uses: webfactory/ssh-agent@v0.5.4 #(Give GitHub Actions access to Michael-F-Bryan/my-secret-repo)
+        with:
+          ssh-private-key: ${{ secrets.SECRET_REPO_DEPLOY_KEY }}
         run: |
           git push origin ${{ needs.Publish.outputs.toTag }}
           echo "Git tag create successfully!"
@@ -179,18 +185,10 @@ jobs:
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_CHANNEL: general
-        SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
-        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png?size=48
-        SLACK_MESSAGE: "GitHub build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }} :rocket:"
+        SLACK_COLOR: ${{ needs.GitTag.outcome }} # or a specific color like 'good' or '#ff00ff'
+        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        SLACK_MESSAGE: "GitHub build result: ${{ needs.GitTag.outcome }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }} :rocket:"
         SLACK_TITLE: "GitHub Workflow Report:"
         SLACK_USERNAME: GitHubBot
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    if: always()
-
-  envVariables:
-    name: printenv
-    runs-on: ubuntu-latest
-    steps:
-    - name: printenv
-      run: printenv
     if: always()
