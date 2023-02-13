@@ -48,6 +48,7 @@ jobs:
           path: path/to/artifact/world.txt
   
   configure:
+    needs: build
     runs-on: ubuntu-latest
     environment: Testing
     steps:
@@ -73,7 +74,6 @@ jobs:
       
       # Move files between jobs
       - name: Download
-        needs: build
         uses: actions/download-artifact@v3
         with:
           name: my-artifact
