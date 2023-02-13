@@ -120,7 +120,9 @@ jobs:
       - name: Semver
         id: SemVer
         # if: ${{ github.Action == pull_request }} #$(git rev-list --tags --max-count=1)
-        run: echo "::set-output name=version::$(git describe --tags $(git rev-list --tags --max-count=1)))"
+        run: |
+          git fetch --tags --all
+          echo "::set-output name=version::$(git describe --tags $(git rev-list --tags --max-count=1)))"
         
       # SemVer preperation, grabbing latest tag, adding minor to it.
       - name: Semver
