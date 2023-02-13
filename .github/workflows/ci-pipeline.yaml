@@ -8,7 +8,7 @@
 # 3. Use secrets and vars where possible for dynamically and security.
 # 4. TBD - decouple jobs furtur more, after figuring out how to pass files from one job to the other.
 # 5. TBD - figure out how to use secret for the ECR and repo name for the build-push-docker action.
-# 6. 
+# 6. Accessing private repo/assets using SSH deploy keys [https://adventures.michaelfbryan.com/posts/configuring-cargo-auth-in-github-actions/]
 #
 # Actions used:
 # 1) (checkout@v3)[https://github.com/marketplace/actions/checkout]
@@ -17,8 +17,7 @@
 # 4) (aws-actions/configure-aws-credentials@v1)[https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions]
 # 5) (aws-actions/amazon-ecr-login@v1)[https://github.com/marketplace/actions/amazon-ecr-login-action-for-github-actions]
 # 6) (actions/download-artifact@v3)[https://github.com/marketplace/actions/download-a-build-artifact]
-# 7) ()[]
-# 7) ()[]
+# 7) (webfactory/ssh-agent@v0.7.0)[https://github.com/marketplace/actions/webfactory-ssh-agent]
 #
 # GitHub OpenID Connect - https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
 #
@@ -51,8 +50,8 @@ jobs:
           context: ./GitHub-Actions/demodocker
           push: false
           tags: pipeline:current-build-test2
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
 
       - name: Unit Test Current Build
         working-directory: ./GitHub-Actions/demodocker
@@ -163,10 +162,10 @@ jobs:
           git tag -a "${{ needs.Publish.outputs.toTag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.Publish.outputs.toTag }}"
 
       - name: Give GitHub Actions access to zMynx/pipeline-test repo
-        uses: webfactory/ssh-agent@v0.5.4
+        uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.SECRET_REPO_DEPLOY_KEY }}
-          
+
       - name: Push local tag to remote
         id: push-tag 
         run: |
