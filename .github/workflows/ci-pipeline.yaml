@@ -173,7 +173,7 @@ jobs:
       - name: Build, tag, and push docker image to Amazon ECR
         working-directory: ./GitHub-Actions/demodocker
         env:
-          REGISTRY: ${{ secrets.login-ecr.outputs.registry }}
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.REPO_NAME }}
           IMAGE_TAG: ${{ needs.SemVer.outputs.current_build_tag }}
         run: |
