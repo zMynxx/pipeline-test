@@ -56,7 +56,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  Test:
+  Test1:
     needs: Build
     runs-on: ubuntu-latest
     environment: Testing
@@ -68,14 +68,49 @@ jobs:
       - name: UnitTest#1
         working-directory: ./GitHub-Actions/demodocker
         run: |
-          docker build -t pipeline:current-build-test2 -f . Dockerfile
+          docker build -t pipeline:current-build-test2 -f .
+          docker run --name dockertest -d pipeline:current-build-test2
+          echo "Assume we have unit tests to run..."
+          docker stop dockertest
+  
+  Test2:
+    needs: Build
+    runs-on: ubuntu-latest
+    environment: Testing
+    steps:
+
+      - name: Git clone
+        uses: actions/checkout@v3
+
+      - name: UnitTest#1
+        working-directory: ./GitHub-Actions/demodocker
+        run: |
+          docker build -t pipeline:current-build-test2 -f .
           docker run --name dockertest -d pipeline:current-build-test2
           echo "Assume we have unit tests to run..."
           docker stop dockertest
 
+  Test3:
+    needs: Build
+    runs-on: ubuntu-latest
+    environment: Testing
+    steps:
+
+      - name: Git clone
+        uses: actions/checkout@v3
+
+      - name: UnitTest#1
+        working-directory: ./GitHub-Actions/demodocker
+        run: |
+          docker build -t pipeline:current-build-test2 -f .
+          docker run --name dockertest -d pipeline:current-build-test2
+          echo "Assume we have unit tests to run..."
+          docker stop dockertest
+
+
   SemVer:
     # if: ${{ github.Action == pull_request }} #$(git rev-list --tags --max-count=1)
-    needs: [Build, Test]
+    needs: [Build, Test1, Test2, Test3]
     runs-on: ubuntu-latest
     environment: Testing
     outputs:
@@ -108,7 +143,7 @@ jobs:
           echo "publish_tag=v${{ steps.minor.outputs.major }}.${{ steps.minor.outputs.minor }}.$next" >> $GITHUB_OUTPUT
 
   Publish:
-    needs: [Build, Test, SemVer]
+    needs: [Build, Test1, Test2, Test3, SemVer]
     runs-on: ubuntu-latest
     environment: Testing
     outputs:
@@ -153,7 +188,7 @@ jobs:
         run: echo "toTag=${{ needs.SemVer.outputs.current_build_tag }}" >> $GITHUB_OUTPUT
 
   GitTag:
-    needs: [Build, Test, SemVer, Publish]
+    needs: [Build, Test1, Test2, Test3, SemVer, Publish]
     runs-on: ubuntu-latest
     environment: Testing
     steps:
@@ -191,7 +226,7 @@ jobs:
   # Report on Slack
   slackNotification:
     name: Slack Notification
-    needs: [Build, Test, SemVer, Publish, GitTag]
+    needs: [Build, Test1, Test2, Test3, SemVer, Publish, GitTag]
     runs-on: ubuntu-latest
     steps:
 
