@@ -158,6 +158,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+
+      # Git Clone
+      - name: Checkout
+        uses: actions/checkout@v3
+        run: |
+          git config --global user.email "ci-pipeline@github-actions.com"
+          git config --global user.name "github-actions"
       # Commit empty and tag local
       - name: Tag
         id: tag
