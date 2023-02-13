@@ -236,15 +236,15 @@ jobs:
     
     - name: Test status
       run: |
-        echo "${{ needs.GitTag.outcome }}"
+        echo "${{ needs.GitTag.result }}"
 
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_CHANNEL: general
-        SLACK_COLOR: ${{ needs.GitTag.outcome }} # or a specific color like 'good' or '#ff00ff'
+        SLACK_COLOR: ${{ needs.GitTag.result }} # or a specific color like 'good' or '#ff00ff'
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-        SLACK_MESSAGE: "GitHub build result: ${{ needs.GitTag.outcome }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }} :rocket:"
+        SLACK_MESSAGE: "GitHub build result: ${{ needs.GitTag.result }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }} :rocket:"
         SLACK_TITLE: "GitHub Workflow Report:"
         SLACK_USERNAME: GitHubBot
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
