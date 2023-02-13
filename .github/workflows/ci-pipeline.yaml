@@ -1,4 +1,4 @@
-# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [12-02-2023] #
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [13-02-2023] #
 # 
 # Stages: Package, Test, Deliver, Deploy.
 # 
@@ -29,7 +29,16 @@ jobs:
         working-directory: ./GitHub-Actions/demodocker
         run:  |
           docker build -t pipeline:current-build-test .
-    
+
+      # Build the image
+      - name: Build, tag, and push image to Amazon ECR
+        uses: docker/build-push-action@v2
+        id: build-image
+        with:
+          context: ./GitHub-Actions/demodocker
+          push: false
+          tags: pipeline:current-build-test2 
+
       # Unit Test Current Build
       - name: Test
         working-directory: ./GitHub-Actions/demodocker
@@ -94,7 +103,7 @@ jobs:
       # SemVer preperation, grabbing latest tag, adding minor to it.
       - name: Semver
         env:
-          TAG: ${{ steps.SemVer.output }}
+          TAG: ${{ steps.SemVer.outputs.run }}
         run: |
           echo $TAG
 
