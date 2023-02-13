@@ -179,7 +179,8 @@ jobs:
         with:
           context: ./GitHub-Actions/demodocker
           push: true
-          tags: 442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:0.1
+          tags: |
+            ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ needs.SemVer.outputs.current_build_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
@@ -236,7 +237,7 @@ jobs:
     - name: Test status
       run: |
         echo "${{ needs.GitTag.outcome }}"
-  
+
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
       env:
