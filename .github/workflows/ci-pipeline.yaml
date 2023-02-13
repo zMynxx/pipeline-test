@@ -82,6 +82,7 @@ jobs:
           path: path/to/artifact/world.txt
   
   Semantic_Versioning:
+    # if: ${{ github.Action == pull_request }} #$(git rev-list --tags --max-count=1)
     needs: Build
     runs-on: ubuntu-latest
     environment: Testing
@@ -95,27 +96,28 @@ jobs:
       # Grab the latest tag, form vX.X.X
       - name: Semver
         id: SemVer
-        # if: ${{ github.Action == pull_request }} #$(git rev-list --tags --max-count=1)
         run: |
           git fetch --tags --all
           version=`git describe --tags $(git rev-list --tags --max-count=1) | cut -d 'v' -f2`
           echo "current_version=$version" >> $GITHUB_OUTPUT
         
-      # Take care of minor update
+      # Split current version 
       - name: minor
         id: minor
         run: |
           major=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 1`
           minor=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 2`
           patch=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 3`
+          echo "major=$major" >> $GITHUB_OUTPUT
           echo "minor=$minor" >> $GITHUB_OUTPUT
+          echo "patch=$patch" >> $GITHUB_OUTPUT
 
       # Pass current publish tag to the next job
       - name: minor
         id: pass_publish_tag
         run: |
-          next=`echo "(${{ steps.minor.outputs.minor }}+1)" | bc`
-          echo "publish_tag=$next" >> $GITHUB_OUTPUT
+          next=`echo "(${{ steps.minor.outputs.patch }}+1)" | bc`
+          echo "publish_tag=v${{ steps.minor.outputs.major }}.${{ steps.minor.outputs.minor }}.$next" >> $GITHUB_OUTPUT
 
   Publish:
     needs: Semantic_Versioning
@@ -125,9 +127,7 @@ jobs:
 
       # Grab passed tag from prev job
       - name: Current Publish Tag
-        env:
-          TAG: ${{ needs.Semantic_Versioning.outputs.current_build_tag }}
-        run: echo "${{ env.TAG }}"
+        run: echo "${{ needs.Semantic_Versioning.outputs.current_build_tag }}"
 
       # Set up AWS Auth
       - name: Configure AWS credentials
