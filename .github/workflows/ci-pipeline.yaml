@@ -80,6 +80,21 @@ jobs:
         run: ls -R
         working-directory: path/to/artifact
 
+      # SemVer preperation, grabbing latest tag, adding minor to it.
+      - name: Semver
+        id: SemVer
+        if: ${{ github.Action == pull_request }}
+        run: |
+          TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo $TAG
+        
+      # SemVer preperation, grabbing latest tag, adding minor to it.
+      - name: Semver
+        env:
+          TAG: ${{ step.SemVer.output }}
+        run: |
+          echo $TAG
+
       # Delivery
       - name: Build, tag, and push image to Amazon ECR
         uses: docker/build-push-action@v2
