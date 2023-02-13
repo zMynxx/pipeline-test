@@ -184,3 +184,12 @@ jobs:
         SLACK_USERNAME: GitHubBot
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     if: always()
+
+  envVariables:
+    name: printenv
+    runs-on: ubuntu-latest
+    steps:
+    
+    - name: printenv
+      runs: printenv
+    if: always()
