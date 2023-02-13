@@ -113,11 +113,9 @@ jobs:
       # Pass current publish tag to the next job
       - name: minor
         id: pass_publish_tag
-        env:
-          TAG: ${{ steps.minor.outputs.minor }}
         run: |
-          next=$(${{ env.TAG }})
-          echo "publish_tag=${{ env.TAG }}" >> $GITHUB_OUTPUT
+          next=`echo "(${{ steps.minor.outputs.minor }}+1)" | bc`
+          echo "publish_tag=$next" >> $GITHUB_OUTPUT
 
   Publish:
     needs: Semantic_Versioning
