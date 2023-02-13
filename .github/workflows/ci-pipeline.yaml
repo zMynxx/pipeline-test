@@ -71,14 +71,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      # Move files between jobs
-      - name: Download
-        uses: actions/download-artifact@v3
-        with:
-          name: my-artifact
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: path/to/artifact
+      # # Move files between jobs
+      # - name: Download
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: my-artifact
+      # - name: Display structure of downloaded files
+      #   run: ls -R
+      #   working-directory: path/to/artifact
 
       # SemVer preperation, grabbing latest tag, adding minor to it.
       - name: Semver
