@@ -141,9 +141,9 @@ deploy:
 
 ## Info, links, etc
 -------------------
- (GitHub OpenID Connect Docs)[https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services]
- (AWS Configure Plugin Github Repo)[https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions]
- (Youtube Tutorial)[https://www.youtube.com/watch?v=k2Tv-EJl7V4]
+(GitHub OpenID Connect Docs)[https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services]
+(AWS Configure Plugin Github Repo)[https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions]
+(Youtube Tutorial)[https://www.youtube.com/watch?v=k2Tv-EJl7V4]
 
 ## Maintainer notes:
 --------------------
