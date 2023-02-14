@@ -26,21 +26,25 @@ permissions:
 
 jobs:
   Build:
+    runs-on: ubuntu-latest
     environment: Testing
     uses: ./.github/workflows/build.yml
 
   Test:
     needs: [Build]
+    runs-on: ubuntu-latest
     environment: Testing
     uses: ./.github/workflows/test.yml
 
   SemVer:
     needs: [Build, Test]
+    runs-on: ubuntu-latest
     environment: Testing
     uses: ./.github/workflows/semver.yml
 
   Publish:
     needs: [Build, Test, SemVer]
+    runs-on: ubuntu-latest
     environment: Testing
     outputs:
       toTag: ${{ steps.toTag.outputs.toTag }}
@@ -52,6 +56,7 @@ jobs:
 
   Deploy: ### WORK IN PROGRESS ###
     needs: [Build, Test, SemVer, Publish]
+    runs-on: ubuntu-latest
     environment: Testing
     uses: ./.github/workflows/deploy.yml
     with:
@@ -60,6 +65,7 @@ jobs:
 
   GitTag:
     needs: [Build, Test, SemVer, Publish]
+    runs-on: ubuntu-latest
     environment: Testing
     uses: ./.github/workflows/deploy.yml
     with:
@@ -69,6 +75,7 @@ jobs:
 
   slackNotification:
     needs: [Build, Test, SemVer, Publish, GitTag]
+    runs-on: ubuntu-latest
     if: always()
     uses: ./.github/workflows/slacknotification.yml
     with:
