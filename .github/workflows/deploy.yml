@@ -58,10 +58,9 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: task-definition.json
+          task-definition: ${{ inputs.taskDefinitionContext }}/task-definition.json
           container-name: my-container
           image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
-        working-directory: ${{ inputs.taskDefinitionContext }}
   
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
