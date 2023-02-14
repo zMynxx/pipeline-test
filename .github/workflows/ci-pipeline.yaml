@@ -27,21 +27,21 @@ permissions:
 jobs:
   Build:
     uses: ./.github/workflows/build.yml
-    environment: Testing
+    # environment: Testing
 
   Test:
     needs: [Build]
-    environment: Testing
+    # environment: Testing
     uses: ./.github/workflows/test.yml
 
   SemVer:
     needs: [Build, Test]
-    environment: Testing
+    # environment: Testing
     uses: ./.github/workflows/semver.yml
 
   Publish:
     needs: [Build, Test, SemVer]
-    environment: Testing
+    # environment: Testing
     outputs:
       toTag: ${{ steps.toTag.outputs.toTag }}
       Image_Tag: ${{ steps.ecr.outputs.image_tag}}
@@ -52,7 +52,7 @@ jobs:
 
   Deploy: ### WORK IN PROGRESS ###
     needs: [Build, Test, SemVer, Publish]
-    environment: Testing
+    # environment: Testing
     uses: ./.github/workflows/deploy.yml
     with:
       imageTag: ${{ needs.SemVer.outputs.publishTag }}
@@ -60,7 +60,7 @@ jobs:
 
   GitTag:
     needs: [Build, Test, SemVer, Publish]
-    environment: Testing
+    # environment: Testing
     uses: ./.github/workflows/deploy.yml
     with:
       toTag: "v${{ needs.SemVer.outputs.publishTag }}"
