@@ -49,7 +49,10 @@ jobs:
     # Map the job outputs to step outputs
     outputs:
       imageTag: ${{ steps.ecr.outputs.image_tag}}
-    
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - name: Test tag passed from prev job and soon-to-be-published
         run: echo "${{ inputs.publishTag }}"
