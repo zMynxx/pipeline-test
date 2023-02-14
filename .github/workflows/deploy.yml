@@ -5,6 +5,10 @@
 #
 # Actions plugibs used:
 # 1) (checkout@v3)[https://github.com/marketplace/actions/checkout]
+# 2) (aws-actions/configure-aws-credentials@v1)[https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions]
+# 3) (aws-actions/amazon-ecr-login@v1)[https://github.com/marketplace/actions/amazon-ecr-login-action-for-github-actions]
+# 4) (aws-actions/amazon-ecs-render-task-definition@v1)[https://github.com/marketplace/actions/amazon-ecs-render-task-definition-action-for-github-actions]
+# 5) (aws-actions/amazon-ecs-deploy-task-definition@v1)[https://github.com/marketplace/actions/amazon-ecs-deploy-task-definition-action-for-github-actions]
 #
 name: Publish
 on:
