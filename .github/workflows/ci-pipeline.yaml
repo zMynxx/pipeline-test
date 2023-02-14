@@ -29,44 +29,37 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       DockerfileContext: ./GitHub-Actions/demodocker
-    # environment: Testing
 
   Test:
     needs: [Build]
-    # environment: Testing
     uses: ./.github/workflows/test.yml
     with:
       DockerfileContext: ./GitHub-Actions/demodocker
 
   SemVer:
     needs: [Build, Test]
-    # environment: Testing
     uses: ./.github/workflows/semver.yml
 
   Publish:
     needs: [Build, Test, SemVer]
-    environment: Testing
-    # outputs:
-    #   toTag: ${{ steps.toTag.outputs.toTag }}
-    #   Image_Tag: ${{ steps.ecr.outputs.image_tag}}
     uses: ./.github/workflows/publish.yml
     with:
+      environment: Testing
       DockerfileContext: ./GitHub-Actions/demodocker
       publishTag: ${{ needs.SemVer.outputs.publishTag }}
     secrets: inherit
 
   Deploy: ### WORK IN PROGRESS ###
     needs: [Build, Test, SemVer, Publish]
-    # environment: Testing
     uses: ./.github/workflows/deploy.yml
     with:
+      environment: Testing
       DockerfileContext: ./GitHub-Actions/demodocker
       imageTag: ${{ needs.SemVer.outputs.publishTag }}
     secrets: inherit
 
   GitTag:
     needs: [Build, Test, SemVer, Publish, Deploy]
-    # environment: Testing
     uses: ./.github/workflows/gittag.yml
     with:
       toTag: "v${{ needs.SemVer.outputs.publishTag }}"
