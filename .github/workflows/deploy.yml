@@ -17,7 +17,7 @@ on:
       imageTag:
         required: true
         type: string
-      DockerfileContext:
+      taskDefinitionContext:
         required: true
         type: string
 
@@ -30,7 +30,7 @@ on:
       AWS_REGION:
         required: true
       ECR_REGISTRY:
-        required: false
+        required: true
       REPO_NAME:
         required: true
 
@@ -39,6 +39,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
+  
+      - name: Git clone
+        uses: actions/checkout@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -50,25 +54,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        working-directory: ${{ inputs.DockerfileContext }}
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REGISTRY }}
-          IMAGE_TAG: ${{ inputs.imageTag }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
+        working-directory: ${{ inputs.taskDefinitionContext }}
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
           container-name: my-container
-          image: ${{ inputs.imageTag }}
+          image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

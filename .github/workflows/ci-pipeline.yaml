@@ -49,14 +49,14 @@ jobs:
       publishTag: ${{ needs.SemVer.outputs.publishTag }}
     secrets: inherit
 
-  Deploy: ### WORK IN PROGRESS ###
-    needs: [Build, Test, SemVer, Publish]
-    uses: ./.github/workflows/deploy.yml
-    with:
-      environment: Testing
-      DockerfileContext: ./GitHub-Actions/demodocker
-      imageTag: ${{ needs.SemVer.outputs.publishTag }}
-    secrets: inherit
+  # Deploy: ### WORK IN PROGRESS ###
+  #   needs: [Build, Test, SemVer, Publish]
+  #   uses: ./.github/workflows/deploy.yml
+  #   with:
+  #     environment: Testing
+  #     taskDefinitionContext: ./GitHub-Actions/demodocker
+  #     imageTag: ${{ needs.SemVer.outputs.publishTag }}
+  #   secrets: inherit
 
   GitTag:
     needs: [Build, Test, SemVer, Publish, Deploy]
