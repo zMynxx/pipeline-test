@@ -26,8 +26,8 @@ permissions:
 
 jobs:
   Build:
-    environment: Testing
     uses: ./.github/workflows/build.yml
+    environment: Testing
 
   Test:
     needs: [Build]
