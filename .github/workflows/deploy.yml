@@ -71,16 +71,22 @@ jobs:
           image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
       
       - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
-        run:  cat  ${{ steps.task-def.outputs.task-definition }} || echo "${{ steps.task-def.outputs.task-definition }}"
+        working-directory: ${{ inputs.taskDefinitionContext }}
+        run:  echo "${{ steps.task-def.outputs.task-definition }}" > test_tast_definition.json
+        
+      - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
+        working-directory: ${{ inputs.taskDefinitionContext }}
+        run:  sed -i 's/\/\//\//' test_tast_definition.json
         
       - name: Deploy Amazon ECS task definition
+        id: task-dep
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: ${{ inputs.taskDefinitionContext }}/test_tast_definition.json
           # service: my-service
           cluster: test_for-github-workflow-test_cluster
           wait-for-service-stability: false
 
       - name: TEST AFTER 2nd ACTION
-        run:  cat  ${{ steps.task-def.outputs.task-definition }} || echo "${{ steps.task-def.outputs.task-definition }}"
+        run:  cat  ${{ steps.task-dep.outputs.task-definition }} || echo "${{ steps.task-dep.outputs.task-definition }}"
         
