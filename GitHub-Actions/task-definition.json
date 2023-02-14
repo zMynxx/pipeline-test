@@ -21,7 +21,7 @@
         }
     ],
     "family": "test_for-github-workflow_ecs",
-    "executionRoleArn": "arn:aws:iam::442284833462:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::1111111111:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [],
     "placementConstraints": [],
@@ -39,20 +39,12 @@
     },
     "tags": [
         {
-            "key": "vsl-labs:data-center",
-            "value": "eu-west-1"
-        },
-        {
             "key": "Environment",
             "value": "Testing"
         },
         {
             "key": "Owner",
             "value": "Lior-Develeap"
-        },
-        {
-            "key": "vsl-labs:env-type",
-            "value": "test"
         }
     ]
 }
