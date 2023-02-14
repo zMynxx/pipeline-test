@@ -45,7 +45,7 @@ jobs:
     uses: ./.github/workflows/publish.yml
     with:
       environment: Testing
-      DockerfileContext: ./GitHub-Actions/
+      DockerfileContext: ./GitHub-Actions/demodocker
       publishTag: ${{ needs.SemVer.outputs.publishTag }}
     secrets: inherit
 
