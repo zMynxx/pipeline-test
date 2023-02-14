@@ -26,25 +26,25 @@ jobs:
         working-directory: ${{ inputs.DockerfileContext }}
         run: |
           docker build -t pipeline:current-build-test2 -f Dockerfile .
-          docker run --name dockertest -d pipeline:current-build-test2
+          docker run --name dockertest1 -d pipeline:current-build-test2
           echo "Assume we have unit tests to run..."
-          docker stop dockertest
+          docker stop dockertest1
 
       - name: UnitTest#2
         working-directory: ${{ inputs.DockerfileContext }}
         run: |
           docker build -t pipeline:current-build-test2 -f Dockerfile .
-          docker run --name dockertest -d pipeline:current-build-test2
+          docker run --name dockertest2 -d pipeline:current-build-test2
           echo "Assume we have unit tests to run..."
-          docker stop dockertest
+          docker stop dockertest2
 
       - name: UnitTest#2
         working-directory: .${{ inputs.DockerfileContext }}
         run: |
           docker build -t pipeline:current-build-test2 -f Dockerfile .
-          docker run --name dockertest -d pipeline:current-build-test2
+          docker run --name dockertest3 -d pipeline:current-build-test2
           echo "Assume we have unit tests to run..."
-          docker stop dockertest
+          docker stop dockertest3
 
       - name: Cancelling workflow on error
         if: failure()
