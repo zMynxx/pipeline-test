@@ -68,7 +68,7 @@ jobs:
         with:
           task-definition: ${{ inputs.taskDefinitionContext }}/task-definition.json
           container-name: my-container
-          image: ${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
+          image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
       
       - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
         run:  cat  ${{ steps.task-def.outputs.task-definition }} || echo "${{ steps.task-def.outputs.task-definition }}"
