@@ -2,24 +2,22 @@
 							# How to setup OpenID Connect in Github and AWS #
 							#===============================================#
 
+Maintainer: Lior Dux.
+Date: 14-02-2023.
+Last Update: 14-02-2023.
 
-Maintainer:     Lior Dux
-Date:           14-02-2023
-Last Update:    14-02-2023 
-
-1) Add GitHub as an Identity Provider:
+## Step 1: Add GitHub as an Identity Provider:
+----------------------------------------------
 - Select OpenID Connect
 - For the provider URL: Use https://token.actions.githubusercontent.com
 - Click on 'Get thumbprint'
 - For the "Audience": Use sts.amazonaws.com if you are using the official action
 - Tag as you wish
 
-2) Create an Role with the relevent access required for you liking.
-
-@ Example of a Role 'my-github-actions-role-test' with attached policy (with access to ECR and ECS):
-------------------------------------------------------------------------------------------------------
+## Step 2: Create an Role with the relevent access required for you liking.
+---------------------------------------------------------------------------
 ```GitHub-Actions-OIDC-Policy
-{
+{    //# Example of a Role 'my-github-actions-role-test' with attached policy (with access to ECR and ECS):
     "Version": "2012-10-17",
     "Statement": [
         {
@@ -69,12 +67,10 @@ Last Update:    14-02-2023
 }
 ```
 
-3) Edit the Trust Policy of your Role for a better match with JWT:
-
-@ Example (all branches in my repo):
-#===================================
+## Step 3: Edit the Trust Policy of your Role for a better match with JWT:
+--------------------------------------------------------------------------
 ```
-{
+{   //# Example (all branches in my repo):
     "Version": "2012-10-17",
     "Statement": [
         {
@@ -94,9 +90,10 @@ Last Update:    14-02-2023
 }
 ```
 
-4). Edit your workflow:
+## Step 4: Edit your workflow:
+------------------------------
 
-@ Add the plugin to your workflow:
+#### Add the plugin to your workflow:
 ----------------------------------
 ```permissions.yml
 # permission can be added at job level or workflow level    
@@ -105,8 +102,7 @@ permissions:
   contents: read  # This is required for actions/checkout
 ```
 
-
-@ Add the plugin to your workflow:
+#### Add the plugin to your workflow:
 ----------------------------------
 ```plugin.yml
     - name: Configure AWS credentials from Test account
@@ -116,7 +112,7 @@ permissions:
         aws-region: us-east-1
 ```
 
-@ Example of workflow integration:
+#### Example of workflow integration:
 ----------------------------------
 ```oidc-workflow.yml
 deploy:
@@ -139,8 +135,9 @@ deploy:
         role-session-name: GitHub-Actions-OIDC
         aws-region: eu-west-1
 ```
-
-5) All Done!
+## Step 5: All Done!
+--------------------
+:party:
 
 ## Info, links, etc
 -------------------
