@@ -14,6 +14,9 @@ on:
       imageTag:
         required: true
         type: string
+      DockerfileContext:
+        required: true
+        type: string
 
     # Required secrets
     secrets:
@@ -45,6 +48,7 @@ jobs:
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
+        working-directory: ${{ inputs.DockerfileContext }}
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REGISTRY }}

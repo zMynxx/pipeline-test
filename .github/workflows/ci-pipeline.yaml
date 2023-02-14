@@ -27,12 +27,16 @@ permissions:
 jobs:
   Build:
     uses: ./.github/workflows/build.yml
+    with:
+      DockerfileContext: ./GitHub-Actions/demodocker
     # environment: Testing
 
   Test:
     needs: [Build]
     # environment: Testing
     uses: ./.github/workflows/test.yml
+    with:
+      DockerfileContext: ./GitHub-Actions/demodocker
 
   SemVer:
     needs: [Build, Test]
@@ -56,6 +60,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       imageTag: ${{ needs.SemVer.outputs.publishTag }}
+      DockerfileContext: ./GitHub-Actions/demodocker
     secrets: inherit
 
   GitTag:
