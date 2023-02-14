@@ -21,7 +21,7 @@
         }
     ],
     "family": "test_for-github-workflow_ecs",
-    "executionRoleArn": "arn:aws:iam::442284833462:role[/]ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::442284833462:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [],
     "placementConstraints": [],

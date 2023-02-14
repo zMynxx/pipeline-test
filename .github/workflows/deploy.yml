@@ -72,13 +72,13 @@ jobs:
         # secrets: 
         #   ACTIONS_STEP_DEBUG: true
       
-      - name: Manual fix on typo using 'sed'
-        working-directory: ${{ inputs.taskDefinitionContext }}
-        run:  sed -i 's/\/\//\//' ${{ steps.task-def.outputs.task-definition }}
+      # - name: Manual fix on typo using 'sed'
+      #   working-directory: ${{ inputs.taskDefinitionContext }}
+      #   run:  sed -i 's/\/\//\//' ${{ steps.task-def.outputs.task-definition }}
         
-      - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
-        working-directory: ${{ inputs.taskDefinitionContext }}
-        run:  echo "${{ steps.task-def.outputs.task-definition }}"
+      # - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
+      #   working-directory: ${{ inputs.taskDefinitionContext }}
+      #   run:  echo "${{ steps.task-def.outputs.task-definition }}"
         
       - name: Deploy Amazon ECS task definition
         id: task-dep
