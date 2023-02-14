@@ -65,7 +65,7 @@ jobs:
     secrets: inherit
 
   GitTag:
-    needs: [Build, Test, SemVer, Publish]
+    needs: [Build, Test, SemVer, Publish, Deploy]
     # environment: Testing
     uses: ./.github/workflows/gittag.yml
     with:
