@@ -26,6 +26,7 @@ jobs:
 
       - name: UnitTest#1
         working-directory: ${{ inputs.DockerfileContext }}
+        run: |
           docker build -t pipeline:current-build-test2 -f Dockerfile .
           docker run --name dockertest -d pipeline:current-build-test2
           echo "Assume we have unit tests to run..."
