@@ -74,7 +74,7 @@ jobs:
         working-directory: ${{ inputs.taskDefinitionContext }}
         run:  echo "${{ steps.task-def.outputs.task-definition }}" > test_tast_definition.json
         
-      - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
+      - name: Manual fix on typo using 'sed'
         working-directory: ${{ inputs.taskDefinitionContext }}
         run:  sed -i 's/\/\//\//' test_tast_definition.json
         
@@ -89,4 +89,3 @@ jobs:
 
       - name: TEST AFTER 2nd ACTION
         run:  cat  ${{ steps.task-dep.outputs.task-definition }} || echo "${{ steps.task-dep.outputs.task-definition }}"
-        
