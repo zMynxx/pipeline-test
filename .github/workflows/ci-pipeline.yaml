@@ -60,14 +60,14 @@ jobs:
     # environment: Testing
     uses: ./.github/workflows/deploy.yml
     with:
-      imageTag: ${{ needs.SemVer.outputs.publishTag }}
       DockerfileContext: ./GitHub-Actions/demodocker
+      imageTag: ${{ needs.SemVer.outputs.publishTag }}
     secrets: inherit
 
   GitTag:
     needs: [Build, Test, SemVer, Publish]
     # environment: Testing
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/gittag.yml
     with:
       toTag: "v${{ needs.SemVer.outputs.publishTag }}"
     secrets:
