@@ -64,7 +64,7 @@ jobs:
         with:
           task-definition: ${{ inputs.taskDefinitionContext }}/task-definition.json
           container-name: my-container
-          image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
+          image: ${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
   
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
