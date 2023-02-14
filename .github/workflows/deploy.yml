@@ -66,29 +66,18 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
+          # Do NOT put a '/' in between the ECR_REGISTRY and REPO_NAME here!!!
+          image: ${{ secrets.ECR_REGISTRY }}${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
+
           task-definition: ${{ inputs.taskDefinitionContext }}/task-definition.json
           container-name: my-container
-          image: ${{ secrets.ECR_REGISTRY }}${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
-        # secrets: 
-        #   ACTIONS_STEP_DEBUG: true
-      
-      # - name: Manual fix on typo using 'sed'
-      #   working-directory: ${{ inputs.taskDefinitionContext }}
-      #   run:  sed -i 's/\/\//\//' ${{ steps.task-def.outputs.task-definition }}
-        
-      # - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
-      #   working-directory: ${{ inputs.taskDefinitionContext }}
-      #   run:  echo "${{ steps.task-def.outputs.task-definition }}"
-        
+
       - name: Deploy Amazon ECS task definition
         id: task-dep
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          cluster: test_for-github-workflow-test_cluster
-          wait-for-service-stability: false
-        # secrets: 
-        #   ACTIONS_STEP_DEBUG: true
+          cluster: arn:aws:ecs:eu-west-1:442284833462:cluster/test_for-github-workflow-test_cluster
 
       - name: TEST AFTER 2nd ACTION
         run:  cat  ${{ steps.task-dep.outputs.task-definition }} || echo "${{ steps.task-dep.outputs.task-definition }}"
