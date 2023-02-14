@@ -1,21 +1,11 @@
-# [Lior Dux] ==================== [ OpenID Connect Setup in Github and AWS ] ====================  [14-02-2023] #
-#
-## Info, links, etc
-# (GitHub OpenID Connect Docs)[https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services]
-# (AWS Configure Plugin Github Repo)[https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions]
-# (Youtube Tutorial)[https://www.youtube.com/watch?v=k2Tv-EJl7V4]
-#
-## Maintainer notes:
-# 1. Using roles is best practice. 
-# 2. Decoupling rules privilages is even better practice.
-# 3. Can have multiple calls to aws configure plugin for different roles with different abilities.
-# 4. Token expiry can be set using 'role-duration-seconds: 3600'.
-# 5. According to plugin documentation, default session duration is 1h, and could be extended to 6h using a access-key combo.
-#
-# 
-#							#===============================================#
-#							# How to setup OpenID Connect in Github and AWS #
-#							#===============================================#
+							#===============================================#
+							# How to setup OpenID Connect in Github and AWS #
+							#===============================================#
+
+
+Maintainer:     Lior Dux
+Date:           14-02-2023
+Last Update:    14-02-2023 
 
 1) Add GitHub as an Identity Provider:
 - Select OpenID Connect
@@ -27,7 +17,7 @@
 2) Create an Role with the relevent access required for you liking.
 
 @ Example of a Role 'my-github-actions-role-test' with attached policy (with access to ECR and ECS):
-#================================================================================================
+------------------------------------------------------------------------------------------------------
 ```GitHub-Actions-OIDC-Policy
 {
     "Version": "2012-10-17",
@@ -107,7 +97,7 @@
 4). Edit your workflow:
 
 @ Add the plugin to your workflow:
-#=================================
+----------------------------------
 ```permissions.yml
 # permission can be added at job level or workflow level    
 permissions:
@@ -117,7 +107,7 @@ permissions:
 
 
 @ Add the plugin to your workflow:
-#=================================
+----------------------------------
 ```plugin.yml
     - name: Configure AWS credentials from Test account
       uses: aws-actions/configure-aws-credentials@v1
@@ -127,7 +117,7 @@ permissions:
 ```
 
 @ Example of workflow integration:
-#=================================
+----------------------------------
 ```oidc-workflow.yml
 deploy:
     name: Upload to Amazon S3
@@ -151,3 +141,17 @@ deploy:
 ```
 
 5) All Done!
+
+## Info, links, etc
+-------------------
+ (GitHub OpenID Connect Docs)[https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services]
+ (AWS Configure Plugin Github Repo)[https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions]
+ (Youtube Tutorial)[https://www.youtube.com/watch?v=k2Tv-EJl7V4]
+
+## Maintainer notes:
+--------------------
+1. Using roles is best practice. 
+2. Decoupling rules privilages is even better practice.
+3. Can have multiple calls to aws configure plugin for different roles with different abilities.
+4. Token expiry can be set using 'role-duration-seconds: 3600'.
+5. According to plugin documentation, default session duration is 1h, and could be extended to 6h using a access-key combo.
