@@ -58,6 +58,10 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: TEST BEFORE ACTION
+        working-directory: ${{ inputs.taskDefinitionContext }}
+        run:  cat task-definition.json
+
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -65,7 +69,10 @@ jobs:
           task-definition: ${{ inputs.taskDefinitionContext }}/task-definition.json
           container-name: my-container
           image: ${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
-  
+      
+      - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
+        run:  cat  ${{ steps.task-def.outputs.task-definition }} || echo "${{ steps.task-def.outputs.task-definition }}"
+        
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -73,3 +80,7 @@ jobs:
           # service: my-service
           cluster: test_for-github-workflow-test_cluster
           wait-for-service-stability: false
+
+      - name: TEST AFTER 2nd ACTION
+        run:  cat  ${{ steps.task-def.outputs.task-definition }} || echo "${{ steps.task-def.outputs.task-definition }}"
+        
