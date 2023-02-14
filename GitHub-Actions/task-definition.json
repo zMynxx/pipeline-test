@@ -1,0 +1,84 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:eu-west-1:442284833462:task-definition/test_for-github-workflow_ecs:1",
+    "containerDefinitions": [
+        {
+            "name": "my-container",
+            "image": "442284833462.dkr.ecr.eu-west-1.amazonaws.com/pipeline-test:latest",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "my-container-5000-tcp",
+                    "containerPort": 5000,
+                    "hostPort": 5000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": []
+        }
+    ],
+    "family": "test_for-github-workflow_ecs",
+    "executionRoleArn": "arn:aws:iam::442284833462:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "revision": 1,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "ecs.capability.extensible-ephemeral-storage"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "512",
+    "memory": "1024",
+    "ephemeralStorage": {
+        "sizeInGiB": 21
+    },
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2023-02-14T11:14:11.872Z",
+    "registeredBy": "arn:aws:iam::442284833462:user/Lior-Develeap",
+    "tags": [
+        {
+            "key": "vsl-labs:data-center",
+            "value": "eu-west-1"
+        },
+        {
+            "key": "Environment",
+            "value": "Testing"
+        },
+        {
+            "key": "Owner",
+            "value": "Lior-Develeap"
+        },
+        {
+            "key": "vsl-labs:env-type",
+            "value": "test"
+        }
+    ]
+}

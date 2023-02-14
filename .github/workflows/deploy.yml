@@ -67,6 +67,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: my-service
-          cluster: my-cluster
-          wait-for-service-stability: true
+          # service: my-service
+          cluster: test_for-github-workflow-test_cluster
+          wait-for-service-stability: false
