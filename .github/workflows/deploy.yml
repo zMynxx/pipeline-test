@@ -68,7 +68,7 @@ jobs:
         with:
           task-definition: ${{ inputs.taskDefinitionContext }}/task-definition.json
           container-name: my-container
-          image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
+          image: ${{ secrets.ECR_REGISTRY }}${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
         # secrets: 
         #   ACTIONS_STEP_DEBUG: true
       
