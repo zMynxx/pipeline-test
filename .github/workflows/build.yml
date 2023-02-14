@@ -1,0 +1,40 @@
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [14-02-2023] #
+#
+# Purpose:
+# This workflow is meant to run all build and or package available in our repo.
+#
+# Actions plugibs used:
+# 1) (checkout@v3)[https://github.com/marketplace/actions/checkout]
+# 2) (docker/setup-buildx-action@v2)[https://github.com/marketplace/actions/docker-setup-buildx]
+# 3) (build-push-action@v2)[https://github.com/marketplace/docker/build-push-action]
+# 4) (andymckay/cancel-action@0.3)[andymckay/cancel-action@0.2]
+#
+name: Build
+on:
+  workflow_call:
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    environment: Testing
+    steps:
+
+      - name: Git clone
+        uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build the image (Dockerfile)
+        uses: docker/build-push-action@v2
+        id: build-image
+        with:
+          context: ./GitHub-Actions/demodocker
+          push: false
+          tags: pipeline:current-build-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Cancelling workflow on error
+        if: failure()
+        uses: andymckay/cancel-action@0.3

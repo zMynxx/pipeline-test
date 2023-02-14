@@ -1,30 +1,18 @@
-# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [13-02-2023] #
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [14-02-2023] #
 # 
-# Stages: Package, Test, Deliver, Deploy.
-# 
-# Notes:
+# Main Stages: Package, Test, Publish, Deploy.
+# Additional:  Semantic Versioning, Git taggin, Slack notifications.
+#
+# Maintainer Notes:
 # 1. Use quality actions only.
 # 2. Prefer using actions to code.
-# 3. Use secrets and vars where possible for dynamically and security.
-# 4. TBD - decouple jobs furtur more, after figuring out how to pass files from one job to the other.
-# 5. TBD - figure out how to use secret for the ECR and repo name for the build-push-docker action.
-# 6. Accessing private repo/assets using SSH deploy keys [https://adventures.michaelfbryan.com/posts/configuring-cargo-auth-in-github-actions/]
+# 3. Decoupling make jobs more versitile and dynamic, therefor it's a prefered method.
 #
-# Actions used:
-# 1) (checkout@v3)[https://github.com/marketplace/actions/checkout]
-# 2) (build-push-action@v2)[https://github.com/marketplace/docker/build-push-action]
-# 3) (actions/upload-artifact@v3)[https://github.com/marketplace/actions/upload-a-build-artifact]
-# 4) (aws-actions/configure-aws-credentials@v1)[https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions]
-# 5) (aws-actions/amazon-ecr-login@v1)[https://github.com/marketplace/actions/amazon-ecr-login-action-for-github-actions]
-# 6) (actions/download-artifact@v3)[https://github.com/marketplace/actions/download-a-build-artifact]
-# 7) (webfactory/ssh-agent@v0.7.0)[https://github.com/marketplace/actions/webfactory-ssh-agent]
-# 8) (rtCamp/action-slack-notify@v2)[https://github.com/marketplace/actions/slack-notify]
-# 9) (docker/setup-buildx-action@v2)[https://github.com/marketplace/actions/docker-setup-buildx]
-#
+# TBD - Security Hardening
 # GitHub OpenID Connect - https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+# Configure AWS -         https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
 #
 name: ci-pipeline
-
 on:
   push:
     branches: ['main', 'feature/*']
@@ -33,272 +21,57 @@ on:
 
 # permission can be added at job level or workflow level    
 permissions:
-  id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
+  # id-token: write # This is required for requesting the JWT
 
 jobs:
   Build:
-    runs-on: ubuntu-latest
     environment: Testing
-    steps:
+    uses: ./.github/workflows/build.yml
 
-      - name: Git clone
-        uses: actions/checkout@v3
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      
-      - name: Build the image (Dockerfile)
-        uses: docker/build-push-action@v2
-        id: build-image
-        with:
-          context: ./GitHub-Actions/demodocker
-          push: false
-          tags: pipeline:current-build-test2
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Cancelling workflow on error
-        if: failure()
-        uses: andymckay/cancel-action@0.2
-
-  Test1:
-    needs: Build
-    runs-on: ubuntu-latest
+  Test:
+    needs: [Build]
     environment: Testing
-    steps:
-
-      - name: Git clone
-        uses: actions/checkout@v3
-
-      - name: UnitTest#1
-        working-directory: ./GitHub-Actions/demodocker
-        run: |
-          docker build -t pipeline:current-build-test2 -f Dockerfile .
-          docker run --name dockertest -d pipeline:current-build-test2
-          echo "Assume we have unit tests to run..."
-          docker stop dockertest
-
-      # - name: Cancelling workflow on error
-      #   if: failure()
-      #   uses: andymckay/cancel-action@0.2
-
-  Test2:
-    needs: Build
-    runs-on: ubuntu-latest
-    environment: Testing
-    steps:
-
-      - name: Git clone
-        uses: actions/checkout@v3
-
-      - name: UnitTest#1
-        working-directory: ./GitHub-Actions/demodocker
-        run: |
-          docker build -t pipeline:current-build-test2 -f Dockerfile .
-          docker run --name dockertest -d pipeline:current-build-test2
-          echo "Assume we have unit tests to run..."
-          docker stop dockertest
-
-  Test3:
-    needs: Build
-    runs-on: ubuntu-latest
-    environment: Testing
-    steps:
-
-      - name: Git clone
-        uses: actions/checkout@v3
-
-      - name: UnitTest#1
-        working-directory: ./GitHub-Actions/demodocker
-        run: |
-          docker build -t pipeline:current-build-test2 -f Dockerfile .
-          docker run --name dockertest -d pipeline:current-build-test2
-          echo "Assume we have unit tests to run..."
-          docker stop dockertest
-
+    uses: ./.github/workflows/test.yml
 
   SemVer:
-    # if: ${{ github.Action == pull_request }} #$(git rev-list --tags --max-count=1)
-    needs: [Build, Test1, Test2, Test3]
-    runs-on: ubuntu-latest
+    needs: [Build, Test]
     environment: Testing
-    outputs:
-      current_build_tag: ${{ steps.pass_publish_tag.outputs.publish_tag }}
-    steps:
-      - name: Git clone
-        uses: actions/checkout@v3
-
-      - name: Grab the latest tag, form vX.X.X
-        id: SemVer
-        run: |
-          git fetch --tags --all
-          version=`git describe --tags $(git rev-list --tags --max-count=1) | cut -d 'v' -f2`
-          echo "current_version=$version" >> $GITHUB_OUTPUT
-        
-      - name: Split current version
-        id: minor
-        run: |
-          major=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 1`
-          minor=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 2`
-          patch=`echo "${{ steps.SemVer.outputs.current_version }}" | cut -d '.' -f 3`
-          echo "major=$major" >> $GITHUB_OUTPUT
-          echo "minor=$minor" >> $GITHUB_OUTPUT
-          echo "patch=$patch" >> $GITHUB_OUTPUT
-
-      - name: Update patch and pass current publish tag to the next job
-        id: pass_publish_tag
-        run: |
-          next=`echo "(${{ steps.minor.outputs.patch }}+1)" | bc`
-          echo "publish_tag=${{ steps.minor.outputs.major }}.${{ steps.minor.outputs.minor }}.$next" >> $GITHUB_OUTPUT
+    uses: ./.github/workflows/semver.yml
 
   Publish:
-    needs: [Build, Test1, Test2, Test3, SemVer]
-    runs-on: ubuntu-latest
+    needs: [Build, Test, SemVer]
     environment: Testing
     outputs:
       toTag: ${{ steps.toTag.outputs.toTag }}
-    steps:
+      Image_Tag: ${{ steps.ecr.outputs.image_tag}}
+    uses: ./.github/workflows/publish.yml
+    with:
+      publishTag: ${{ needs.SemVer.outputs.publishTag }}
+    secrets: inherit
 
-      - name: Test tag passed from prev job and soon-to-be-published
-        run: echo "${{ needs.SemVer.outputs.current_build_tag }}"
-      
-      - name: Git clone
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          # role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
-          # role-session-name: samplerolesession
-          # role-duration-seconds: 1200
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
-      
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-      
-      - name: CLI Docker build, tag, and push to Amazon ECR
-        working-directory: ./GitHub-Actions/demodocker
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ secrets.REPO_NAME }}
-          IMAGE_TAG: ${{ needs.SemVer.outputs.current_build_tag }}
-        run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
-      # - name: Publish to amazon ECR
-      #   uses: docker/build-push-action@v2
-      #   id: build-image
-      #   with:
-      #     context: ./GitHub-Actions/demodocker
-      #     push: true
-      #     tags: |
-      #       ${{ secrets.REPO_NAME }}:${{ needs.SemVer.outputs.current_build_tag }}
-      #     cache-from: type=gha
-      #     # cache-to: type=gha,mode=max
-      
-      - name: Pass tag to next job
-        id: toTag
-        run: echo "toTag=v${{ needs.SemVer.outputs.current_build_tag }}" >> $GITHUB_OUTPUT
+  Deploy: ### WORK IN PROGRESS ###
+    needs: [Build, Test, SemVer, Publish]
+    environment: Testing
+    uses: ./.github/workflows/deploy.yml
+    with:
+      imageTag: ${{ needs.SemVer.outputs.publishTag }}
+    secrets: inherit
 
   GitTag:
-    needs: [Build, Test1, Test2, Test3, SemVer, Publish]
-    runs-on: ubuntu-latest
+    needs: [Build, Test, SemVer, Publish]
     environment: Testing
-    steps:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      toTag: "v${{ needs.SemVer.outputs.publishTag }}"
+    secrets:
+      SECRET_REPO_DEPLOY_KEY: ${{ secrets.SECRET_REPO_DEPLOY_KEY }}
 
-      - name: Test tag passed from prev job and soon-to-be-tagged
-        run: echo "${{ needs.Publish.outputs.toTag }}"
-
-      - name: Git clone
-        uses: actions/checkout@v3
-        # with:
-        #   fetch-depth: 0
-        #   persist-credentials: false
-
-      - name: GitHub Actions config setup
-        run: |
-          git config --global user.email "ci-pipeline@github-actions.com"
-          git config --global user.name "github-actions"
-
-      - name: Create a local tag
-        id: tag
-        run: |
-          git tag -a "${{ needs.Publish.outputs.toTag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ needs.Publish.outputs.toTag }}"
-
-      - name: Give GitHub Actions access to zMynx/pipeline-test repo
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SECRET_REPO_DEPLOY_KEY }}
-
-      - name: Push local tag to remote
-        id: push-tag 
-        run: |
-          git push origin ${{ needs.Publish.outputs.toTag }}
-          echo "Git tag create successfully!"
-
-  # Report on Slack
   slackNotification:
-    name: Slack Notification
-    needs: [Build, Test1, Test2, Test3, SemVer, Publish, GitTag]
-    runs-on: ubuntu-latest
+    needs: [Build, Test, SemVer, Publish, GitTag]
     if: always()
-    steps:
-
-    - name: Git clone
-      uses: actions/checkout@v3
-    
-    - name: Test status
-      run: |
-        echo "${{ needs.GitTag.result }}"
-
-    # Success
-    - name: Slack Notification
-      if: ${{ needs.GitTag.result == 'success' }}
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_CHANNEL: general
-        SLACK_COLOR: 'good' # or a specific color like 'good' or '#ff00ff'
-        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-        SLACK_MESSAGE: |
-          :robot_face: GitHub build result: ${{ needs.GitTag.result }}  :robot_face:
-          ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
-        SLACK_TITLE: "GitHub Workflow Report:"
-        SLACK_USERNAME: GitHubBot
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-
-    # # Skipped
-    # - name: Slack Notification
-    #   if: ${{ needs.GitTag.result == 'skipped' }}
-    #   uses: rtCamp/action-slack-notify@v2
-    #   env:
-    #     SLACK_CHANNEL: general
-    #     SLACK_COLOR: 'warning' # or a specific color like 'good' or '#ff00ff'
-    #     SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-    #     SLACK_MESSAGE: |
-    #       :robot_face: GitHub build result: ${{ needs.GitTag.result }}  :robot_face:
-    #       ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
-    #       :warning: Pipeline has SKIPPED some of it's jobs, probabely due to early failure :warning:
-    #     SLACK_TITLE: "GitHub Workflow Report:"
-    #     SLACK_USERNAME: GitHubBot
-    #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-
-    # Failed
-    - name: Slack Notification
-      if: ${{ needs.GitTag.result != 'success' }}
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_CHANNEL: general
-        SLACK_COLOR: 'danger' # or a specific color like 'good' or '#ff00ff'
-        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-        SLACK_MESSAGE: |
-          :robot_face: GitHub build result: ${{ needs.GitTag.result }}  :robot_face:
-          ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
-          :x::sos: Pipeline has FAILED, please check you code! :sos::x:
-        SLACK_TITLE: "GitHub Workflow Report:"
-        SLACK_USERNAME: GitHubBot
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/slacknotification.yml
+    with:
+      result: ${{ needs.GitTag.result }}
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

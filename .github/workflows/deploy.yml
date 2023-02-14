@@ -1,0 +1,71 @@
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [14-02-2023] #
+#
+# Purpose:
+# This workflow is meant to tag the image correctly, and push into AWS Elastic Container Registery.
+#
+# Actions plugibs used:
+# 1) (checkout@v3)[https://github.com/marketplace/actions/checkout]
+#
+name: Publish
+on:
+  workflow_call:
+    # Reguired inputs
+    inputs:
+      imageTag:
+        required: true
+        type: string
+
+    # Required secrets
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
+      ECR_REGISTRY:
+        required: false
+      REPO_NAME:
+        required: true
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REGISTRY }}
+        IMAGE_TAG: ${{ inputs.imageTag }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: my-container
+          image: ${{ inputs.imageTag }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: my-service
+          cluster: my-cluster
+          wait-for-service-stability: true

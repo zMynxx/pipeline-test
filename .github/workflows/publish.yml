@@ -1,0 +1,81 @@
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [14-02-2023] #
+#
+# Purpose:
+# This workflow is meant to tag the image correctly, and push into AWS Elastic Container Registery.
+#
+# Actions plugibs used:
+# 1) (checkout@v3)[https://github.com/marketplace/actions/checkout]
+# 2) (aws-actions/configure-aws-credentials@v1)[https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions]
+# 3) (aws-actions/amazon-ecr-login@v1)[https://github.com/marketplace/actions/amazon-ecr-login-action-for-github-actions]
+#
+name: Publish
+on:
+  workflow_call:
+    # Reguired inputs
+    inputs:
+      publishTag:
+        required: true
+        type: string
+      DockerfileContext:
+        required: true
+        type: string
+
+    # Required secrets
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
+      ECR_REGISTRY:
+        required: false
+      REPO_NAME:
+        required: true
+
+    # Map the workflow outputs to job outputs
+    outputs:
+      imageTag:
+        description: "Pass image tag to the next workflow/jobs to be using in `docker push`"
+        value: ${{ jobs.Publish.outputs.imageTag }}
+
+jobs:
+  Publish:
+    runs-on: ubuntu-latest
+
+    # Map the job outputs to step outputs
+    outputs:
+      imageTag: ${{ steps.ecr.outputs.image_tag}}
+    
+    steps:
+      - name: Test tag passed from prev job and soon-to-be-published
+        run: echo "${{ inputs.publishTag }}"
+      
+      - name: Git clone
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          # role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          # role-session-name: samplerolesession
+          # role-duration-seconds: 1200
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      
+      - name: CLI Docker build, tag, and push to Amazon ECR
+        id: ecr
+        working-directory: ${{ inputs.DockerfileContext }}
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.REPO_NAME }}
+          IMAGE_TAG: ${{ inputs.publishTag }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "image_tag=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT

@@ -1,0 +1,52 @@
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [14-02-2023] #
+#
+# Purpose:
+# This workflow is meant to tag the remote branch accroding to the version deployed.
+#
+# Actions plugibs used:
+# 1) (checkout@v3)[https://github.com/marketplace/actions/checkout]
+#
+name: GitTag
+on:
+  workflow_call:
+    # Reguired inputs
+    inputs:
+      toTag:
+        required: true
+        type: string
+
+    # Required secrets
+    secrets:
+      SECRET_REPO_DEPLOY_KEY:
+        required: true
+
+jobs:
+  GitTag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test tag passed from prev job and soon-to-be-tagged
+        run: echo "${{ inputs.toTag }}"
+
+      - name: Git clone
+        uses: actions/checkout@v3
+
+      - name: GitHub Actions config setup
+        run: |
+          git config --global user.email "ci-pipeline@github-actions.com"
+          git config --global user.name "github-actions"
+
+      - name: Create a local tag
+        id: tag
+        run: |
+          git tag -a "${{ inputs.toTag }}" -m "GitHub-Actions Tag Added Automatically - New Image Uploded ${{ inputs.toTag }}"
+
+      - name: Give GitHub Actions access to zMynx/pipeline-test repo
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SECRET_REPO_DEPLOY_KEY }}
+
+      - name: Push local tag to remote
+        id: push-tag 
+        run: |
+          git push origin ${{ inputs.toTag }}
+          echo "Git tag create successfully!"

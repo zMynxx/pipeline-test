@@ -1,0 +1,48 @@
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipelien ] ====================  [14-02-2023] #
+#
+# Purpose:
+# This workflow is meant to take care of semantic versioning for us.
+#
+# Actions plugibs used:
+# 1) (checkout@v3)[https://github.com/marketplace/actions/checkout]
+#
+name: SemVer
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      publishTag:
+        description: "Pass tag to the next workflow/jobs to be using in `git tag`"
+        value: ${{ jobs.SemVer.outputs.publishTag }}
+
+jobs:
+  SemVer:
+    runs-on: ubuntu-latest
+    outputs:
+      publishTag: ${{ steps.publishTag.outputs.publishTag }}
+    steps:
+      - name: Git clone
+        uses: actions/checkout@v3
+
+      - name: Grab the latest tag, form vX.X.X
+        id: latestTag
+        run: |
+          git fetch --tags --all
+          version=`git describe --tags $(git rev-list --tags --max-count=1) | cut -d 'v' -f2`
+          echo "current_version=$version" >> $GITHUB_OUTPUT
+        
+      - name: Split current version
+        id: minor
+        run: |
+          major=`echo "${{ steps.latestTag.outputs.current_version }}" | cut -d '.' -f 1`
+          minor=`echo "${{ steps.latestTag.outputs.current_version }}" | cut -d '.' -f 2`
+          patch=`echo "${{ steps.latestTag.outputs.current_version }}" | cut -d '.' -f 3`
+          echo "major=$major" >> $GITHUB_OUTPUT
+          echo "minor=$minor" >> $GITHUB_OUTPUT
+          echo "patch=$patch" >> $GITHUB_OUTPUT
+
+      - name: Update patch and pass current publish tag to the next job
+        id: publishTag
+        run: |
+          next=`echo "(${{ steps.minor.outputs.patch }}+1)" | bc`
+          echo "publishTag=${{ steps.minor.outputs.major }}.${{ steps.minor.outputs.minor }}.$next" >> $GITHUB_OUTPUT
