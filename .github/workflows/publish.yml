@@ -13,6 +13,9 @@ on:
   workflow_call:
     # Reguired inputs
     inputs:
+      environment:
+        required: true
+        type: string
       publishTag:
         required: true
         type: string
@@ -42,7 +45,7 @@ on:
 jobs:
   Publish:
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.environment }}
     # Map the job outputs to step outputs
     outputs:
       imageTag: ${{ steps.ecr.outputs.image_tag}}
