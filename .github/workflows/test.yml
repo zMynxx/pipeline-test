@@ -17,6 +17,7 @@ on:
         type: string
 jobs:
   Test:
+    runs-on: ubuntu-latest
     steps:
       - name: Git clone
         uses: actions/checkout@v3
