@@ -51,6 +51,7 @@ jobs:
     #   Image_Tag: ${{ steps.ecr.outputs.image_tag}}
     uses: ./.github/workflows/publish.yml
     with:
+      DockerfileContext: ./GitHub-Actions/demodocker
       publishTag: ${{ needs.SemVer.outputs.publishTag }}
     secrets: inherit
 
