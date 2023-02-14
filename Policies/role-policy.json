@@ -1,0 +1,77 @@
+# [Lior Dux] ==================== [ GitHub Actions OpenID Connet Setup ] ====================  [14-02-2023] #
+# 
+#
+Identity Provider:
+    name:   token.actions.githubusercontent.com (OpenID Connect)
+    arn:    arn:aws:iam::442284833462:oidc-provider/token.actions.githubusercontent.com
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::442284833462:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": "repo:zMynx/pipeline-test:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}
+===============================================================================
+Role:
+    name:   GitHubActions-role-test
+    arn:    arn:aws:iam::442284833462:role/GitHubActions-role-test
+```GitHubActions-Role-ECR.json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:CompleteLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:InitiateLayerUpload",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:PutImage"
+            ],
+            "Resource": "arn:aws:ecr:eu-west-1:442284833462:repository/pipeline-test"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "ecr:GetAuthorizationToken",
+            "Resource": "*"
+        }
+    ]
+}
+```
+===============================================================================
+User:
+    name:   github-actions
+    arn:    arn:aws:iam::442284833462:user/github-actions
+    attached-policies:
+    1) GitHub-Actions-ECR.json
+    2) GitHub-Actions-ECS.json
+    3) GitHub-Actions-STS.json
+
+TODO:
+1 - Limit access using condition suchs as:
+```
+"Condition": {
+    "StringEquals": {
+        "aws:PrincipalAccount": "arn:aws:iam::442284833462:user/github-actions",
+        "aws:RequestedRegion": "eu-west-1"
+    },
+    "ArnEquals": {
+        "aws:SourceArn": "arn:aws:iam::442284833462:user/github-actions"
+    }
+}
+```
