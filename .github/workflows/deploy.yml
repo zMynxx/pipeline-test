@@ -72,20 +72,19 @@ jobs:
         # secrets: 
         #   ACTIONS_STEP_DEBUG: true
       
-      - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
-        working-directory: ${{ inputs.taskDefinitionContext }}
-        run:  echo "${{ steps.task-def.outputs.task-definition }}" > test_tast_definition.json
-        
       - name: Manual fix on typo using 'sed'
         working-directory: ${{ inputs.taskDefinitionContext }}
-        run:  sed -i 's/\/\//\//' test_tast_definition.json
+        run:  sed -i 's/\/\//\//' ${{ steps.task-def.outputs.task-definition }}
+        
+      - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
+        working-directory: ${{ inputs.taskDefinitionContext }}
+        run:  echo "${{ steps.task-def.outputs.task-definition }}"
         
       - name: Deploy Amazon ECS task definition
         id: task-dep
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ inputs.taskDefinitionContext }}/test_tast_definition.json
-          # service: my-service
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
           cluster: test_for-github-workflow-test_cluster
           wait-for-service-stability: false
         # secrets: 
