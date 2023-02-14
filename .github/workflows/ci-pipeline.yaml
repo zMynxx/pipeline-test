@@ -59,7 +59,7 @@ jobs:
     secrets: inherit
 
   GitTag:
-    needs: [Build, Test, SemVer, Publish]
+    needs: [Build, Test, SemVer, Publish, Deploy]
     uses: ./.github/workflows/gittag.yml
     with:
       toTag: "v${{ needs.SemVer.outputs.publishTag }}"
