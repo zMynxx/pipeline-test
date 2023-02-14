@@ -69,6 +69,8 @@ jobs:
           task-definition: ${{ inputs.taskDefinitionContext }}/task-definition.json
           container-name: my-container
           image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
+        secrets: 
+          ACTIONS_STEP_DEBUG: true
       
       - name: TEST AFTER 1st ACTION, BEFORE 2nd ACTION
         working-directory: ${{ inputs.taskDefinitionContext }}
@@ -86,6 +88,8 @@ jobs:
           # service: my-service
           cluster: test_for-github-workflow-test_cluster
           wait-for-service-stability: false
+        secrets: 
+          ACTIONS_STEP_DEBUG: true
 
       - name: TEST AFTER 2nd ACTION
         run:  cat  ${{ steps.task-dep.outputs.task-definition }} || echo "${{ steps.task-dep.outputs.task-definition }}"
