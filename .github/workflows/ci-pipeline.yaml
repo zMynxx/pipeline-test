@@ -45,7 +45,6 @@ jobs:
 
   Publish:
     needs: [Build, Test, SemVer]
-    # environment: Testing
     # outputs:
     #   toTag: ${{ steps.toTag.outputs.toTag }}
     #   Image_Tag: ${{ steps.ecr.outputs.image_tag}}

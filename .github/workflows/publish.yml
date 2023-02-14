@@ -42,7 +42,8 @@ on:
 jobs:
   Publish:
     runs-on: ubuntu-latest
-
+    environment: Testing
+    
     # Map the job outputs to step outputs
     outputs:
       imageTag: ${{ steps.ecr.outputs.image_tag}}
