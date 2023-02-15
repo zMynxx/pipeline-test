@@ -49,7 +49,7 @@ jobs:
       publishTag: ${{ needs.SemVer.outputs.publishTag }}
     secrets: inherit
 
-  Deploy: ### WORK IN PROGRESS ###
+  Deploy:
     needs: [Build, Test, SemVer, Publish]
     uses: ./.github/workflows/deploy.yml
     with:
