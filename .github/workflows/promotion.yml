@@ -99,17 +99,17 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}
 
-      - name: Pull
-        env:
-          REGISTRY: ${{ steps.login-ecr-dev.outputs.registry }}
-          REPOSITORY: dev.${{ inputs.Repo }}
-          IMAGE_TAG: ${{ inputs.Build }}
-        run: |
-          docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
-      # - name: Pull image from dev
+      # - name: Pull
+      #   env:
+      #     REGISTRY: ${{ steps.login-ecr-dev.outputs.registry }}
+      #     REPOSITORY: dev.${{ inputs.Repo }}
+      #     IMAGE_TAG: ${{ inputs.Build }}
       #   run: |
-      #     docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
+      #     docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: Pull image from dev
+        run: |
+          docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
 
       # - name: Re-tag image to production
       #   run: |
