@@ -21,16 +21,29 @@ on:
       imageTag:
         required: true
         type: string
-      taskDefinitionContext:
-        required: true
+      containerName:
+        required: false
         type: string
+        default: "my-container"
+      taskDefinitionContext:
+        required: false
+        type: string
+        default: "./"
+      taskDefinition:
+        required: false
+        type: string
+        default: "task-definition.json"
+      serviceName:
+        required: false
+        type: string
+        default: "my-service"
+      clusterName:
+        required: false
+        type: string
+        default: "vsl-dev"
 
     # Required secrets
     secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
       AWS_REGION:
         required: true
       ECR_REGISTRY:
@@ -54,8 +67,6 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-session-name: GitHub-Actions-OIDC
           role-duration-seconds: 1200
@@ -67,24 +78,25 @@ jobs:
 
       - name: TEST BEFORE ACTION
         working-directory: ${{ inputs.taskDefinitionContext }}
-        run:  cat task-definition.json
+        run:  cat ${{ inputs.taskDefinitionContext }}/${{ inputs.taskDefinition }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
+        working-directory: ${{ inputs.taskDefinitionContext }}
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           # Do NOT put a '/' in between the ECR_REGISTRY and REPO_NAME here!!!
-          image: ${{ secrets.ECR_REGISTRY }}${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
+          image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.REPO_NAME }}:${{ inputs.imageTag }}
+          task-definition: ${{ inputs.taskDefinition }}
+          container-name: ${{ inputs.containerName }}
 
-          task-definition: ${{ inputs.taskDefinitionContext }}/task-definition.json
-          container-name: my-container
+      - name: TEST AFTER RENDER ACTION
+        run:  cat  ${{ steps.task-dep.outputs.task-definition }}
 
       - name: Deploy Amazon ECS task definition
         id: task-dep
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          cluster: test_for-github-workflow-test_cluster
-
-      - name: TEST AFTER 2nd ACTION
-        run:  cat  ${{ steps.task-dep.outputs.task-definition }} || echo "${{ steps.task-dep.outputs.task-definition }}"
+          service: ${{ inputs.serviceName }}
+          cluster: ${{ inputs.clusterName }}

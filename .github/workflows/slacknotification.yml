@@ -15,6 +15,10 @@ on:
       result:
         required: true
         type: string
+      channel:
+        required: false
+        type: string
+        default: general
 
     # Required secrets
     secrets:
@@ -37,7 +41,7 @@ jobs:
       if: ${{ inputs.result == 'success' }}
       uses: rtCamp/action-slack-notify@v2
       env:
-        SLACK_CHANNEL: general
+        SLACK_CHANNEL: ${{ inputs.channel }}
         SLACK_COLOR: 'good' # or a specific color like 'good' or '#ff00ff'
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         SLACK_MESSAGE: |
@@ -52,7 +56,7 @@ jobs:
     #   if: ${{ needs.GitTag.result == 'skipped' }}
     #   uses: rtCamp/action-slack-notify@v2
     #   env:
-    #     SLACK_CHANNEL: general
+    #     SLACK_CHANNEL: ${{ inputs.channel }}
     #     SLACK_COLOR: 'warning' # or a specific color like 'good' or '#ff00ff'
     #     SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
     #     SLACK_MESSAGE: |
@@ -68,7 +72,7 @@ jobs:
       if: ${{ inputs.result != 'success' }}
       uses: rtCamp/action-slack-notify@v2
       env:
-        SLACK_CHANNEL: general
+        SLACK_CHANNEL: ${{ inputs.channel }}
         SLACK_COLOR: 'danger' # or a specific color like 'good' or '#ff00ff'
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         SLACK_MESSAGE: |

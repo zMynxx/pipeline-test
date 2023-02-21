@@ -72,5 +72,6 @@ jobs:
     uses: ./.github/workflows/slacknotification.yml
     with:
       result: ${{ needs.GitTag.result }}
+      channel: general
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

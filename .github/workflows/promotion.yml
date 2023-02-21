@@ -1,0 +1,134 @@
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipeline ] ====================  [21-02-2023] #
+#
+# Purpose:
+# Manually promote builds from dev to production.
+#
+# How:
+# Manually trigger will ask the operator for an <image_name>:<tag> input.
+# Workflow will initiate to:
+# - pull that image
+# - re-tag according to production semantics
+# - push to the relevant production repo
+# - notify slack channel about new version in production
+#
+# Security:
+# Using OpenID Connect to allow github actions to assume role in AWS.
+# 2 Roles have been created:
+# 1) development with access to dev ECR.
+# 2) production with access to prod ECR.
+#
+# TBD - Add deployments update to ECS prod(?)
+#
+# Maintainer Notes:
+# 1. Use quality actions only.
+# 2. Prefer using actions to code.
+# 3. Decoupling make jobs more versitile and dynamic, therefor it's a prefered method.
+#
+# TBD - Security Hardening
+# GitHub OpenID Connect - https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+# Configure AWS -         https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
+#
+#
+#
+name: Promotion
+on:
+  workflow_dispatch:
+    # Reguired inputs
+    inputs:
+      Repo:
+        description: "Select repositry:"
+          required: true
+          type: choice
+          options:
+          - gec
+          - translation
+          - translate_fastapi
+      Build:
+        description: "Enter build number to promote:"
+        required: true
+        type: string
+      Major:
+        required: true
+        type: string
+      Minor:
+        required: true
+        type: string
+      Patch:
+        required: true
+        type: string
+
+    # Required secrets
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+      AWS_REGION:
+        required: true
+      ECR_REGISTRY:
+        required: false
+
+jobs:
+  Promote:
+    runs-on: ubuntu-latest
+    # Map the job outputs to step outputs
+    outputs:
+      imageTag: ${{ steps.ecr.outputs.imageTag}}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials (Development)
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_DEV }}
+          role-session-name: GitHub-Actions-OIDC-${{ secrets.REPO_NAME }}
+          role-duration-seconds: 3600
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # - name: Login to ECR (docker)
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ${{ steps.login-ecr.outputs.registry }}
+
+      - name: Pull image from dev
+        run: |
+          docker pull ${{ secrets.ECR_REGISTRY }}/${{ inputs.Image }}:${{ inputs.Build }}
+
+      - name: Re-tag image to production
+        run: |
+          docker tag  ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }} ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
+
+      - name: Configure AWS credentials (Production)
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_PRODUCTION }}
+          role-session-name: GitHub-Actions-OIDC-${{ secrets.REPO_NAME }}
+          role-duration-seconds: 3600
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v1
+
+      # - name: Login to ECR (docker)
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ${{ steps.login-ecr.outputs.registry }}
+
+      - name: Push to production repo
+        run: |
+          docker push ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
+
+  slackNotification:
+    needs: [Promote]
+    if: always()
+    uses: ./.github/workflows/slacknotification.yml
+    with:
+      result: ${{ needs.Promote.result }}
+      channel: general
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
