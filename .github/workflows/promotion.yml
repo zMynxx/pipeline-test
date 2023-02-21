@@ -69,9 +69,11 @@ on:
 jobs:
   Promote:
     runs-on: ubuntu-latest
+    environment: 'testing'
+
     # Map the job outputs to step outputs
     outputs:
-      imageTag: ${{ steps.ecr.outputs.imageTag}}
+      version: ${{ steps.version.outputs.version}}
     permissions:
       id-token: write
       contents: read
@@ -81,7 +83,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_DEV }}
-          role-session-name: GitHub-Actions-OIDC-${{ secrets.REPO_NAME }}
+          role-session-name: GitHub-Actions-OIDC-DEV
           role-duration-seconds: 3600
           aws-region: ${{ secrets.AWS_REGION }}
 
@@ -89,10 +91,10 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # - name: Login to ECR (docker)
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: ${{ steps.login-ecr.outputs.registry }}
+      - name: Login to ECR (docker)
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REGISTRY }}/${{ inputs.Image }}
 
       - name: Pull image from dev
         run: |
@@ -106,22 +108,24 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_PRODUCTION }}
-          role-session-name: GitHub-Actions-OIDC-${{ secrets.REPO_NAME }}
+          role-session-name: GitHub-Actions-OIDC-PRODUCTION
           role-duration-seconds: 3600
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # - name: Login to Amazon ECR
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-      # - name: Login to ECR (docker)
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: ${{ steps.login-ecr.outputs.registry }}
+      - name: Login to ECR (docker)
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}
 
       - name: Push to production repo
+        id: version
         run: |
           docker push ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
+          echo "version=${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}" >> $GITHUB_OUTPUT
 
   slackNotification:
     needs: [Promote]
