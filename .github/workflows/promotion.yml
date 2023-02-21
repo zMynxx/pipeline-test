@@ -110,8 +110,8 @@ jobs:
           IMAGE_TAG: ${{ inputs.Build }}
           RELEASE: ${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
         run: |
-          docker tag  $REGISTRY/dev.$REPOSITORY:$IMAGE_TAG $REGISTRY/prod.$REPOSITORY:$RELEASE
-          docker tag  $REGISTRY/prod.$REPOSITORY:$RELEASE $REGISTRY/prod.$REPOSITORY:$latest
+          docker tag  ${{ secrets.ECR_REGISTRY }}/dev.$REPOSITORY:$IMAGE_TAG ${{ secrets.ECR_REGISTRY }}/prod.$REPOSITORY:$RELEASE
+          docker tag  ${{ secrets.ECR_REGISTRY }}/prod.$REPOSITORY:$RELEASE ${{ secrets.ECR_REGISTRY }}/prod.$REPOSITORY:$latest
 
       - name: Configure AWS credentials (Production)
         uses: aws-actions/configure-aws-credentials@v1
