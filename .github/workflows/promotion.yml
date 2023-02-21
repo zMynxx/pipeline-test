@@ -105,7 +105,7 @@ jobs:
           REPOSITORY: dev.${{ inputs.Repo }}
           IMAGE_TAG: ${{ inputs.Build }}
         run: |
-          docker pull $REGISTRY/dev.$REPOSITORY:$IMAGE_TAG
+          docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       # - name: Pull image from dev
       #   run: |
