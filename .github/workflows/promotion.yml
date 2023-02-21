@@ -37,12 +37,12 @@ on:
     inputs:
       Repo:
         description: "Select repositry:"
-          required: true
-          type: choice
-          options:
-          - gec
-          - translation
-          - translate_fastapi
+        required: true
+        type: choice
+        options:
+        - gec
+        - translation
+        - translate_fastapi
       Build:
         description: "Enter build number to promote:"
         required: true
