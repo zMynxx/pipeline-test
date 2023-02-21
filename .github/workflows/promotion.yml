@@ -84,7 +84,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_DEV }}
-          role-session-name: GitHub-Actions-OIDC-DEV
+          role-session-name: GitHub-Actions-OIDC
           role-duration-seconds: 3600
           aws-region: ${{ secrets.AWS_REGION }}
 
@@ -95,11 +95,11 @@ jobs:
       - name: Login to ECR (docker)
         uses: docker/login-action@v1
         with:
-          registry: ${{ secrets.ECR_REGISTRY }}/${{ inputs.Image }}
+          registry: ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}
 
       - name: Pull image from dev
         run: |
-          docker pull ${{ secrets.ECR_REGISTRY }}/${{ inputs.Image }}:${{ inputs.Build }}
+          docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
 
       - name: Re-tag image to production
         run: |
