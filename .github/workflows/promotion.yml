@@ -84,7 +84,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_DEV }}
-          role-session-name: GitHub-Actions-OIDC
+          role-session-name: GitHub-Actions-OIDC-DEV
           role-duration-seconds: 3600
           aws-region: ${{ secrets.AWS_REGION }}
 
