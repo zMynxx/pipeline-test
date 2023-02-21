@@ -94,18 +94,26 @@ jobs:
         id: login-ecr-dev
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Login to ECR (docker)
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}
+      # - name: Login to ECR (docker)
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}
 
-      - name: Pull image from dev
+      - name: Pull
+        env:
+          REGISTRY: ${{ steps.login-ecr-dev.outputs.registry }}
+          REPOSITORY: dev.${{ inputs.Repo }}
+          IMAGE_TAG: ${{ inputs.Build }}
         run: |
-          docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
+          docker pull $REGISTRY/dev.$REPOSITORY:$IMAGE_TAG
 
-      - name: Re-tag image to production
-        run: |
-          docker tag  ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }} ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
+      # - name: Pull image from dev
+      #   run: |
+      #     docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
+
+      # - name: Re-tag image to production
+      #   run: |
+      #     docker tag  ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }} ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
 
       - name: Configure AWS credentials (Production)
         uses: aws-actions/configure-aws-credentials@v1
@@ -119,17 +127,27 @@ jobs:
         id: login-ecr-prod
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Login to ECR (docker)
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}
+      # - name: Login to ECR (docker)
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}
+
+      - name: Tag & Push
+        env:
+          REGISTRY: ${{ steps.login-ecr-dev.outputs.registry }}
+          REPOSITORY: ${{ inputs.Repo }}
+          IMAGE_TAG: ${{ inputs.Build }}
+          RELEASE: ${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
+        run: |
+          echo -e "$REGISTRY/prod.$REPOSITORY:$RELEASE\n $REGISTRY/prod.$REPOSITORY:latest" | xargs -I{} docker tag $REGISTRY/dev.$REPOSITORY:$IMAGE_TAG {}
+          docker image push --all-tags $REGISTRY/prod.$REPOSITORY:$RELEASE
+        #docker tag $REGISTRY/dev.$REPOSITORY:$IMAGE_TAG $REGISTRY/prod.$REPOSITORY:$RELEASE
 
       - name: Push to production repo
         id: version
         run: |
-          docker push ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
           echo "version=${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}" >> $GITHUB_OUTPUT
-
+        #docker push ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
   slackNotification:
     needs: [Promote]
     if: always()
