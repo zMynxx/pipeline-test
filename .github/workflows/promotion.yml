@@ -99,21 +99,19 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}
 
-      # - name: Pull
-      #   env:
-      #     REGISTRY: ${{ steps.login-ecr-dev.outputs.registry }}
-      #     REPOSITORY: dev.${{ inputs.Repo }}
-      #     IMAGE_TAG: ${{ inputs.Build }}
-      #   run: |
-      #     docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
       - name: Pull image from dev
         run: |
           docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
 
-      # - name: Re-tag image to production
-      #   run: |
-      #     docker tag  ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }} ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
+      - name: Re-tag image to production
+        env:
+          REGISTRY: ${{ steps.login-ecr-dev.outputs.registry }}
+          REPOSITORY: ${{ inputs.Repo }}
+          IMAGE_TAG: ${{ inputs.Build }}
+          RELEASE: ${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
+        run: |
+          docker tag  $REGISTRY/dev.$REPOSITORY:$IMAGE_TAG $REGISTRY/prod.$REPOSITORY:$RELEASE
+          docker tag  $REGISTRY/prod.$REPOSITORY:$RELEASE $REGISTRY/prod.$REPOSITORY:$latest
 
       - name: Configure AWS credentials (Production)
         uses: aws-actions/configure-aws-credentials@v1
@@ -139,9 +137,9 @@ jobs:
           IMAGE_TAG: ${{ inputs.Build }}
           RELEASE: ${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
         run: |
-          echo -e "$REGISTRY/prod.$REPOSITORY:$RELEASE\n $REGISTRY/prod.$REPOSITORY:latest" | xargs -I{} docker tag $REGISTRY/dev.$REPOSITORY:$IMAGE_TAG {}
-          docker image push --all-tags $REGISTRY/prod.$REPOSITORY:$RELEASE
-        #docker tag $REGISTRY/dev.$REPOSITORY:$IMAGE_TAG $REGISTRY/prod.$REPOSITORY:$RELEASE
+          docker image push --all-tags $REGISTRY/prod.$REPOSITORY
+        # docker push $REGISTRY/prod.$REPOSITORY:$RELEASE
+        # docker push $REGISTRY/prod.$REPOSITORY:latest
 
       - name: Push to production repo
         id: version
