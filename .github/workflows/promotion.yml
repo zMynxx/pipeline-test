@@ -90,9 +90,9 @@ jobs:
           role-duration-seconds: 3600
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # - name: Login to Amazon ECR
-      #   id: login-ecr-dev
-      #   uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr-dev
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Login to ECR (docker)
         uses: docker/login-action@v1
@@ -115,9 +115,9 @@ jobs:
           role-duration-seconds: 3600
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # - name: Login to Amazon ECR
-      #   id: login-ecr-prod
-      #   uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr-prod
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Login to ECR (docker)
         uses: docker/login-action@v1
