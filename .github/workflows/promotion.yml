@@ -51,9 +51,11 @@ on:
       Major:
         required: true
         type: string
+        default: 0
       Minor:
         required: true
         type: string
+        default: 1
       Patch:
         required: true
         type: string
