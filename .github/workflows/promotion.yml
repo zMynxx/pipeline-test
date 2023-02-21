@@ -45,8 +45,9 @@ on:
         - translate_fastapi
       Build:
         description: "Enter build number to promote:"
-        required: true
+        required: false
         type: string
+        default: latest
       Major:
         required: true
         type: string
