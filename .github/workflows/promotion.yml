@@ -132,20 +132,44 @@ jobs:
       - name: Tag & Push
         run: |
           docker image push --all-tags ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}
-        # docker push $REGISTRY/prod.$REPOSITORY:$RELEASE
-        # docker push $REGISTRY/prod.$REPOSITORY:latest
 
       - name: Push to production repo
         id: version
         run: |
           echo "version=${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}" >> $GITHUB_OUTPUT
-        #docker push ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
+
   slackNotification:
     needs: [Promote]
     if: always()
-    uses: ./.github/workflows/slacknotification.yml
-    with:
-      result: ${{ needs.Promote.result }}
-      channel: general
-    secrets:
-      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Success
+      if: ${{ needs.Promote.result == 'success' }}
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_CHANNEL: production
+        SLACK_COLOR: 'good' # or a specific color like 'good' or '#ff00ff'
+        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        SLACK_MESSAGE: |
+          :robot_face: GitHub build result: ${{ inputs.result }}  :robot_face:
+          New version - ${{ needs.Promote.outputs.version }} - out for release!
+          ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
+        SLACK_TITLE: "!!!Production Update!!!:"
+        SLACK_USERNAME: GitHubBot
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PROD }}
+
+    - name: Fail
+      if: ${{ needs.Promote.result != 'success' }}
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_CHANNEL: production
+        SLACK_COLOR: 'danger' # or a specific color like 'good' or '#ff00ff'
+        SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        SLACK_MESSAGE: |
+          :robot_face: GitHub build result: ${{ inputs.result }}  :robot_face:
+          :x::sos: Promotion to prudction of version - ${{ needs.Promote.outputs.version }} - FAILED! :sos::x:
+          ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
+        SLACK_TITLE: "!!!Production Update!!!:"
+        SLACK_USERNAME: GitHubBot
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PROD }}
