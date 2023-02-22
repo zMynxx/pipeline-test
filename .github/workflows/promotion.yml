@@ -1,4 +1,4 @@
-# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipeline ] ====================  [22-02-2023] #
+# [Lior Dux] ==================== [ GitHub Actions - Manual Build Promotion ] ====================  [22-02-2023] #
 #
 # Purpose:
 # Manually promote builds from dev to production.
@@ -141,9 +141,9 @@ jobs:
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         SLACK_MESSAGE: |
           :robot_face: GitHub build result: ${{ needs.Promote.result }} :robot_face:
-          :party_blob: New version - $RELEASE - out for release! :party_blob:
+          :party_blob: New version - ${{ env.RELEASE }} - out for release! :party_blob:
           ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
-        SLACK_TITLE: "!!!Production Update!!!:"
+        SLACK_TITLE: "!!! Production Update !!!"
         SLACK_USERNAME: GitHubBot
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PROD }}
 
@@ -156,8 +156,8 @@ jobs:
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         SLACK_MESSAGE: |
           :robot_face: GitHub build result: ${{ needs.Promote.result }} :robot_face:
-          :x::sos: Promotion to prudction of version - $RELEASE - FAILED! :sos::x:
+          :x::sos: Promotion to prudction of version - ${{ env.RELEASE }} - FAILED! :sos::x:
           ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
-        SLACK_TITLE: "!!!Production Update!!!:"
+        SLACK_TITLE: "!!! Production Update !!!"
         SLACK_USERNAME: GitHubBot
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PROD }}
