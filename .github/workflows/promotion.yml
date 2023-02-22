@@ -1,10 +1,10 @@
-# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipeline ] ====================  [21-02-2023] #
+# [Lior Dux] ==================== [ GitHub Actions CI-CD Pipeline ] ====================  [22-02-2023] #
 #
 # Purpose:
 # Manually promote builds from dev to production.
 #
 # How:
-# Manually trigger will ask the operator for an <image_name>:<tag> input.
+# Manually trigger will ask the operator for to select a repo, enter the build number (optional - defaults to latest) to promote, and the SemVer tag for current release.
 # Workflow will initiate to:
 # - pull that image
 # - re-tag according to production semantics
@@ -14,21 +14,14 @@
 # Security:
 # Using OpenID Connect to allow github actions to assume role in AWS.
 # 2 Roles have been created:
-# 1) development with access to dev ECR.
-# 2) production with access to prod ECR.
+# 1) development with pull only access to dev ECRs.
+# 2) production with push only access to prod ECRs.
 #
-# TBD - Add deployments update to ECS prod(?)
 #
 # Maintainer Notes:
 # 1. Use quality actions only.
 # 2. Prefer using actions to code.
 # 3. Decoupling make jobs more versitile and dynamic, therefor it's a prefered method.
-#
-# TBD - Security Hardening
-# GitHub OpenID Connect - https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
-# Configure AWS -         https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
-#
-#
 #
 name: Promotion
 on:
@@ -103,11 +96,11 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}
 
-      - name: Pull image from dev
+      - name: Pull build from development repositry
         run: |
           docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
 
-      - name: Re-tag image to production
+      - name: Promote (Re-tag) image to production
         run: |
           docker tag ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }} ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:$RELEASE
           docker tag ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:$RELEASE ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:latest
@@ -129,14 +122,9 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}
 
-      - name: Tag & Push
+      - name: Push to production repositry
         run: |
           docker image push --all-tags ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}
-
-      - name: Push to production repo
-        id: version
-        run: |
-          echo "version=${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}" >> $GITHUB_OUTPUT
 
   slackNotification:
     needs: [Promote]
@@ -152,8 +140,8 @@ jobs:
         SLACK_COLOR: 'good' # or a specific color like 'good' or '#ff00ff'
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         SLACK_MESSAGE: |
-          :robot_face: GitHub build result: ${{ inputs.result }}  :robot_face:
-          New version - ${{ needs.Promote.outputs.version }} - out for release!
+          :robot_face: GitHub build result: ${{ needs.Promote.result }} :robot_face:
+          :party_blob: New version - $RELEASE - out for release! :party_blob:
           ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
         SLACK_TITLE: "!!!Production Update!!!:"
         SLACK_USERNAME: GitHubBot
@@ -167,8 +155,8 @@ jobs:
         SLACK_COLOR: 'danger' # or a specific color like 'good' or '#ff00ff'
         SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         SLACK_MESSAGE: |
-          :robot_face: GitHub build result: ${{ inputs.result }}  :robot_face:
-          :x::sos: Promotion to prudction of version - ${{ needs.Promote.outputs.version }} - FAILED! :sos::x:
+          :robot_face: GitHub build result: ${{ needs.Promote.result }} :robot_face:
+          :x::sos: Promotion to prudction of version - $RELEASE - FAILED! :sos::x:
           ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
         SLACK_TITLE: "!!!Production Update!!!:"
         SLACK_USERNAME: GitHubBot
