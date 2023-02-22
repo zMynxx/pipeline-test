@@ -70,9 +70,6 @@ on:
         required: false
 
 env:
-  REGISTRY: ${{ secrets.ECR_REGISTRY }}
-  REPOSITORY: ${{ inputs.Repo }}
-  BUILD: ${{ inputs.Build }}
   RELEASE: ${{ inputs.Major }}.${{ inputs.Minor }}.${{ inputs.Patch }}
 
 jobs:
@@ -110,12 +107,12 @@ jobs:
 
       - name: Pull image from dev
         run: |
-          docker pull $REGISTRY/dev.$REPOSITORY:$BUILD
+          docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
 
       - name: Re-tag image to production
         run: |
-          docker tag $REGISTRY/dev.$REPOSITORY:$BUILD $REGISTRY/prod.$REPOSITORY:$RELEASE
-          docker tag $REGISTRY/prod.$REPOSITORY:$RELEASE $REGISTRY/prod.$REPOSITORY:latest
+          docker tag ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }} ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:$RELEASE
+          docker tag ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:$RELEASE ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}:latest
 
       - name: Configure AWS credentials (Production)
         uses: aws-actions/configure-aws-credentials@v1
@@ -136,7 +133,7 @@ jobs:
 
       - name: Tag & Push
         run: |
-          docker image push --all-tags $REGISTRY/prod.$REPOSITORY
+          docker image push --all-tags ${{ secrets.ECR_REGISTRY }}/prod.${{ inputs.Repo }}
         # docker push $REGISTRY/prod.$REPOSITORY:$RELEASE
         # docker push $REGISTRY/prod.$REPOSITORY:latest
 
