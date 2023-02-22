@@ -100,10 +100,10 @@ jobs:
         id: login-ecr-dev
         uses: aws-actions/amazon-ecr-login@v1
 
-      # - name: Login to ECR (docker)
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: $REGISTRY/dev.$REPOSITORY
+      - name: Login to ECR (docker)
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}
 
       - name: Pull image from dev
         run: |
@@ -126,10 +126,10 @@ jobs:
         id: login-ecr-prod
         uses: aws-actions/amazon-ecr-login@v1
 
-      # - name: Login to ECR (docker)
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: $REGISTRY/prod.$REPOSITORY
+      - name: Login to ECR (docker)
+        uses: docker/login-action@v1
+        with:
+          registry: $REGISTRY/prod.$REPOSITORY
 
       - name: Tag & Push
         run: |
