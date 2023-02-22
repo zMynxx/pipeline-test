@@ -100,24 +100,14 @@ jobs:
         id: login-ecr-dev
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: CLI Docker build, tag, and push to Amazon ECR
-        id: ecr
-        working-directory: ${{ inputs.DockerfileContext }}
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: dev.${{ inputs.Repo }}
-          IMAGE_TAG: ${{ inputs.Build }}
+      - name: Login to ECR (docker)
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ steps.login-ecr-dev.outputs.registry }}
+
+      - name: Pull image from dev
         run: |
-          docker pull ${{ env.REGISTRY }}/${ env.REPOSITORY }}:${{ env.IMAGE_TAG }}
-
-      # - name: Login to ECR (docker)
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: ${{ steps.login-ecr-dev.outputs.registry }}
-
-      # - name: Pull image from dev
-      #   run: |
-      #     docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
+          docker pull ${{ secrets.ECR_REGISTRY }}/dev.${{ inputs.Repo }}:${{ inputs.Build }}
 
       - name: Re-tag image to production
         run: |
